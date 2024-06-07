@@ -1,0 +1,13 @@
+name = "PlotlyGeometries"
+uuid = "da4dd95e-df4f-4caf-ac06-cee3b0f5c2e6"
+authors = ["Jake W. Liu"]
+version = "1.0.0-DEV"
+
+[compat]
+julia = "1.6.7"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
