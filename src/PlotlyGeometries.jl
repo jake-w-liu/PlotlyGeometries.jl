@@ -4,9 +4,10 @@ using PlotlyJS
 using Combinatorics
 using LinearAlgebra
 
-export boxes, squares, polygons, 
-    ellipsoids, ellipsoids, lines, arrows,
-    create_mesh, rotate!, translate!, sort_pts!, add_ref_axes, no_grids, blank_layout
+export cubes, squares, polygons, 
+    ellipsoids, lines, arrows,
+    create_mesh, rot!, trans!, sort_pts!, add_ref_axes, add_arrows, add_text,
+    blank_layout
 
 include("apis.jl")
 

@@ -1,5 +1,7 @@
+using Infiltrator
+
 """
-    boxes(origin::Vector{<:Number}, dimension::Vector{<:Number}, color::String, opc=1)
+    cubes(origin::Vector{<:Number}, dimension::Vector{<:Number}, color::String, opc=1)
 
 Creates a 3D box mesh centered at the given origin with specified dimensions and color.
 
@@ -9,7 +11,7 @@ Creates a 3D box mesh centered at the given origin with specified dimensions and
 - `color::String`: A string specifying the color of the box.
 - `opc`: (optional) A number specifying the opacity of the box. Default is 1.                                   
 """
-function boxes(origin::Vector{<:Number}, dimension::Vector{<:Number}, color::String, opc=1)
+function cubes(origin::Vector{<:Number}, dimension::Vector{<:Number}, color::String, opc=1)
     @assert length(origin) == 3
     @assert length(dimension) == 3
 
@@ -42,7 +44,7 @@ function boxes(origin::Vector{<:Number}, dimension::Vector{<:Number}, color::Str
 end
 
 """
-squares(origin::Vector{<:Number}, side::Number, color::String, mode="z", opc=1)
+    squares(origin::Vector{<:Number}, side::Number, color::String, mode="z", opc=1)
 
 Creates a 2D square mesh centered at the given origin with the specified side length and color.
 
@@ -151,7 +153,7 @@ function polygons(pts::Vector{Vector{<:Number}}, color::String, opc=1)
 end
 
 """
-ellipsoids(origin::Vector{<:Number}, par::Vector{<:Number}, color::String, opc=1, tres=50, pres=25)
+ellipsoids(origin::Vector{<:Number}, par::Vector{<:Number}, color::String, opc=1, tres=60, pres=30)
 
 Creates a 3D ellipsoid mesh.
 
@@ -162,16 +164,16 @@ Creates a 3D ellipsoid mesh.
 - `opc`: The opacity of the ellipsoid. Default is 1.
 - `res`: The resolution of the mesh grid. Default is 25.
 """
-function ellipsoids(origin::Vector{<:Number}, par::Vector{<:Number}, color::String, opc=1, tres=50, pres=25)
+function ellipsoids(origin::Vector{<:Number}, par::Vector{<:Number}, color::String, opc=1, tres=60, pres=30)
     @assert length(origin) == 3
     @assert length(par) == 3
 
-    phi = LinRange(0, 2 * pi, pres)
-    tht = LinRange(0, pi, tres)
+    phi = LinRange(0, 360, pres)
+    tht = LinRange(0, 180, tres)
 
-    x = sin.(tht) .* cos.(phi') .* par[1] .+ origin[1]
-    y = sin.(tht) .* sin.(phi') .* par[2] .+ origin[2]
-    z = cos.(tht * ones(length(phi))') .* par[3] .+ origin[3]
+    x = sind.(tht) .* cosd.(phi') .* par[1] .+ origin[1]
+    y = sind.(tht) .* sind.(phi') .* par[2] .+ origin[2]
+    z = cosd.(tht * ones(length(phi))') .* par[3] .+ origin[3]
     x = x[:]
     y = y[:]
     z = z[:]
@@ -220,34 +222,6 @@ function lines(pt1::Vector{<:Number}, pt2::Vector{<:Number}, color::String, opc=
     )
 end
 
-"""
-arrows(origin::Vector{<:Number}, direction::Vector{<:Number}, color::String, opc=1)
-
-Creates a 3D arrow starting from a point and pointing in a given direction.
-
-# Arguments
-- `origin::Vector{<:Number}`: The starting point of the arrow.
-- `direction::Vector{<:Number}`: The direction vector of the arrow.
-- `color::String`: The color of the arrow.
-- `opc`: The opacity of the arrow. Default is 1.
-"""
-function arrows(origin::Vector{<:Number}, direction::Vector{<:Number}, color::String, opc=1)
-    @assert length(origin) == 3
-    @assert length(direction) == 3
-
-    c = cone(x=[origin[1] + direction[1] / 2], y=[origin[2] + direction[2] / 2], z=[origin[3] + direction[3] / 2], u=[direction[1]], v=[direction[2]], w=[direction[3]],
-        colorscale=[[0, color], [1, color]],
-        opacity=opc,
-        showscale=false)
-
-    l = scatter3d(x=[origin[1] - direction[1] / 2, origin[1] + direction[1] / 2], y=[origin[2] - direction[2] / 2, origin[2] + direction[2] / 2], z=[origin[3] - direction[3] / 2, origin[3] + direction[3] / 2],
-        line=attr(color=color, width=4),
-        mode="lines",
-        opacity=opc,
-        showlegend=false)
-
-    return [c, l]
-end
 
 
 """
@@ -318,7 +292,7 @@ function create_mesh(pts::Vector{Vector{<:Number}}, ng::Int, color::String, opc=
 end
 
 """
-    translate!(geo::GenericTrace, dis::Vector{<:Number})
+    trans!(geo::GenericTrace, dis::Vector{<:Number})
 
 Translates a 3D geometry by a specified displacement vector.
 
@@ -326,7 +300,7 @@ Translates a 3D geometry by a specified displacement vector.
 - `geo::GenericTrace`: The geometry to translate.
 - `dis::Vector{<:Number}`: A vector of three numbers specifying the translation distances for the x, y, and z axes.
 """
-function translate!(geo::GenericTrace, dis::Vector{<:Number})
+function trans!(geo::GenericTrace, dis::Vector{<:Number})
     @inbounds for n in eachindex(geo.x)
         geo.x[n] += dis[1]
         geo.y[n] += dis[2]
@@ -335,7 +309,7 @@ function translate!(geo::GenericTrace, dis::Vector{<:Number})
 end
 
 """
-    rotate!(geo::GenericTrace, rotang::Vector{<:Number}, center::Vector{<:Number}=[0])
+    rot!(geo::GenericTrace, rotang::Vector{<:Number}, center::Vector{<:Number}=[0])
 
 Rotates a 3D geometry around a specified center point.
 
@@ -344,7 +318,7 @@ Rotates a 3D geometry around a specified center point.
 - `rotang::Vector{<:Number}`: A vector of three Tait–Bryan rotation angles in degrees  for rotations around the x, y, and z axes respectively.
 - `center::Vector{<:Number}`: The center point of rotation. Default is `[0]`, which means the rotation center will be set at the geometric center of the object.
 """
-function rotate!(geo::GenericTrace, rotang::Vector{<:Number}, center::Vector{<:Number}=[0])
+function rot!(geo::GenericTrace, rotang::Vector{<:Number}, center::Vector{<:Number}=[0])
     @assert length(rotang) == 3
 
     alpha = rotang[1]
@@ -375,7 +349,7 @@ function rotate!(geo::GenericTrace, rotang::Vector{<:Number}, center::Vector{<:N
     end
 
     @inbounds for n in eachindex(geo.x)
-        vec = R * (pos[n] - center) 
+        vec = R * (pos[n] - center)
         geo.x[n] = vec[1] + center[1]
         geo.y[n] = vec[2] + center[2]
         geo.z[n] = vec[3] + center[3]
@@ -441,16 +415,19 @@ end
 
 
 """
-    add_ref_axes(plt, origin::Vector{<:Number}, r::Number)
+    add_ref_axes(plt::PlotlyJS.SyncPlot, origin::Vector{<:Number}, r::Number)
 
 Adds reference axes (x, y, z) to a plot.
 
 # Arguments
-- `plt`: The plot to which the axes will be added.
+- `plt::PlotlyJS.SyncPlot`: The plot to which the axes will be added.
 - `origin::Vector{<:Number}`: The origin point of the axes.
 - `r::Number`: The length of the reference axes.
 """
-function add_ref_axes(plt, origin, r)
+function add_ref_axes(plt::PlotlyJS.SyncPlot, origin::Vector{<:Number}, r::Number)
+    @assert length(origin) == 3
+    @assert r > 0
+
     cx = cone(x=[r + origin[1]], y=[origin[2]], z=[origin[3]], u=[r / 10], v=[0], w=[0],
         colorscale=[[0, "red"], [1, "red"]],
         showscale=false)
@@ -509,26 +486,50 @@ function add_ref_axes(plt, origin, r)
 end
 
 """
-    no_grids(plt)
+add_arrows(plt::PlotlyJS.SyncPlot, origin::Vector{<:Number}, dir::Vector{<:Number}, color::String, opc=1)
 
-Disable grid for a plot.
+Creates a 3D arrow starting from a point and pointing in a given direction.
+
+# Arguments
+- `plt::PlotlyJS.SyncPlot`: The plot to which the axes will be added.
+- `origin::Vector{<:Number}`: The starting point of the arrow.
+- `dir::Vector{<:Number}`: The direction vector of the arrow.
+- `color::String`: The color of the arrow.
+- `len::Real`: length of the arrow
+- `opc`: The opacity of the arrow. Default is 1.
+- `mode`: Default `norm` sets the arro length to 1, 
 """
-function no_grids(plt)
-    relayout!(plt,
-        scene=attr(
-            xaxis=attr(
-                visible=false,
-                showgrid=false
-            ),
-            yaxis=attr(
-                visible=false,
-                showgrid=false
-            ),
-            zaxis=attr(
-                visible=false,
-                showgrid=false
-            ),
-        ))
+function add_arrows(plt::PlotlyJS.SyncPlot, origin::Vector{<:Number}, dir::Vector{<:Number}, color::String, len::Float64=1.0, opc=1)
+    @assert length(origin) == 3
+    @assert length(dir) == 3
+    @assert len > 0
+
+    dir = dir ./ norm(dir) .* len
+
+    c = cone(x=[origin[1] + dir[1] / 2], y=[origin[2] + dir[2] / 2], z=[origin[3] + dir[3] / 2], u=[dir[1]], v=[dir[2]], w=[dir[3]],
+        colorscale=[[0, color], [1, color]],
+        opacity=opc,
+        showscale=false)
+
+    addtraces!(plt, c)
+
+    l = scatter3d(x=[origin[1] - dir[1] / 2, origin[1] + dir[1] / 2], y=[origin[2] - dir[2] / 2, origin[2] + dir[2] / 2], z=[origin[3] - dir[3] / 2, origin[3] + dir[3] / 2],
+        line=attr(color=color, width=2 * norm(dir)),
+        mode="lines",
+        opacity=opc,
+        showlegend=false)
+
+    addtraces!(plt, l)
+end
+
+function add_text(plt::PlotlyJS.SyncPlot, origin::Vector{<:Number}, text::String, color::String)
+    addtraces!(plt, scatter3d(x=[origin[1]], y=[origin[2]], z=[origin[3]],
+        mode="text", text=[text], textposition="middle center",
+        textfont=attr(
+            color=color,
+        ),
+        showlegend=false,
+    ))
 end
 
 """
@@ -556,3 +557,5 @@ function blank_layout()
     )
     return layout
 end
+
+
