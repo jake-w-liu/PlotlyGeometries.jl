@@ -1,3 +1,12 @@
-# PlotlyGeometries
+# PlotlyGeometries.jl
 
-[![Build Status](https://github.com/akjake616@gmail.com/PlotlyGeometries.jl/actions/workflows/CI.yml/badge.svg?branch=master)](https://github.com/akjake616@gmail.com/PlotlyGeometries.jl/actions/workflows/CI.yml?query=branch%3Amaster)
+`PlotlyGeometries.jl` is a Julia package designed for creating and manipulating 3D geometrical shapes and visualizations using PlotlyJS. This package provides a variety of functions to easily generate and customize 3D shapes like boxes, spheres, ellipsoids, lines, and arrows, as well as utility functions for transformations and visual enhancements.
+
+## Installation
+
+To install `PlotlyGeometries.jl`, use the following command in the Julia REPL:
+
+```julia
+using Pkg
+Pkg.add("PlotlyGeometries")
+```

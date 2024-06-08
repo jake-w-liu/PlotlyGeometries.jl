@@ -6,7 +6,7 @@ using LinearAlgebra
 
 export boxes, squares, polygons, 
     ellipsoids, ellipsoids, lines, arrows,
-    create_mesh, rotate!, sort_pts!, add_ref_axes, no_grids, blank_layout
+    create_mesh, rotate!, translate!, sort_pts!, add_ref_axes, no_grids, blank_layout
 
 include("apis.jl")
 

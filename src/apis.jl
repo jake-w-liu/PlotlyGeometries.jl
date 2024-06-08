@@ -1,7 +1,3 @@
-# using PlotlyJS
-# using Combinatorics
-# using LinearAlgebra
-
 """
     boxes(origin::Vector{<:Number}, dimension::Vector{<:Number}, color::String, opc=1)
 
@@ -155,7 +151,7 @@ function polygons(pts::Vector{Vector{<:Number}}, color::String, opc=1)
 end
 
 """
-    ellipsoids(origin::Vector{<:Number}, par::Vector{<:Number}, color::String, rotang::Vector{<:Number}=[0, 0, 0], opc=1, res=25)
+ellipsoids(origin::Vector{<:Number}, par::Vector{<:Number}, color::String, opc=1, tres=50, pres=25)
 
 Creates a 3D ellipsoid mesh.
 
@@ -163,33 +159,22 @@ Creates a 3D ellipsoid mesh.
 - `origin::Vector{<:Number}`: The center of the ellipsoid.
 - `par::Vector{<:Number}`: Parameters of the ellipsoid (a, b, c).
 - `color::String`: The color of the ellipsoid.
-- `rotang::Vector{<:Number}`: Rotation angles in degrees (alpha, beta, gamma). Default is [0, 0, 0].
 - `opc`: The opacity of the ellipsoid. Default is 1.
 - `res`: The resolution of the mesh grid. Default is 25.
 """
-function ellipsoids(origin::Vector{<:Number}, par::Vector{<:Number}, color::String, opc=1, res=25)
+function ellipsoids(origin::Vector{<:Number}, par::Vector{<:Number}, color::String, opc=1, tres=50, pres=25)
     @assert length(origin) == 3
     @assert length(par) == 3
 
-    a = par[1]
-    b = par[2]
-    c = par[3]
+    phi = LinRange(0, 2 * pi, pres)
+    tht = LinRange(0, pi, tres)
 
-
-
-    P, T = meshgrid(
-        LinRange(0, 2 * pi, res),
-        LinRange(0, pi, res),
-    )
-
-    x = sin.(T) .* cos.(P) .* a
-    y = sin.(T) .* sin.(P) .* b
-    z = cos.(T) .* c
+    x = sin.(tht) .* cos.(phi') .* par[1] .+ origin[1]
+    y = sin.(tht) .* sin.(phi') .* par[2] .+ origin[2]
+    z = cos.(tht * ones(length(phi))') .* par[3] .+ origin[3]
     x = x[:]
     y = y[:]
     z = z[:]
-
-
 
     return mesh3d(x=x, y=y, z=z,
         alphahull=0,
@@ -333,15 +318,31 @@ function create_mesh(pts::Vector{Vector{<:Number}}, ng::Int, color::String, opc=
 end
 
 """
+    translate!(geo::GenericTrace, dis::Vector{<:Number})
+
+Translates a 3D geometry by a specified displacement vector.
+
+# Arguments
+- `geo::GenericTrace`: The geometry to translate.
+- `dis::Vector{<:Number}`: A vector of three numbers specifying the translation distances for the x, y, and z axes.
+"""
+function translate!(geo::GenericTrace, dis::Vector{<:Number})
+    @inbounds for n in eachindex(geo.x)
+        geo.x[n] += dis[1]
+        geo.y[n] += dis[2]
+        geo.z[n] += dis[3]
+    end
+end
+
+"""
     rotate!(geo::GenericTrace, rotang::Vector{<:Number}, center::Vector{<:Number}=[0])
 
 Rotates a 3D geometry around a specified center point.
 
 # Arguments
 - `geo::GenericTrace`: The 3D geometry to be rotated, which must have `x`, `y`, and `z` coordinates.
-- `rotang::Vector{<:Number}`: A vector of three Tait–Bryan rotation angles in degrees `[alpha, beta, gamma]` for rotations around the x, y, and z axes respectively.
+- `rotang::Vector{<:Number}`: A vector of three Tait–Bryan rotation angles in degrees  for rotations around the x, y, and z axes respectively.
 - `center::Vector{<:Number}`: The center point of rotation. Default is `[0]`, which means the rotation center will be set at the geometric center of the object.
-
 """
 function rotate!(geo::GenericTrace, rotang::Vector{<:Number}, center::Vector{<:Number}=[0])
     @assert length(rotang) == 3
