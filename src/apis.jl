@@ -92,65 +92,6 @@ function squares(origin::Vector{<:Real}, side::Real, color::String, mode::String
 end
 
 """
-    polygons(pts::Vector{Vector{<:Real}}, color::String, opc::Real=1)
-
-    Creates a polygon mesh from a set of points.
-
-    # Arguments
-    - `pts::Vector{Vector{<:Real}}`: List of points defining the polygon.
-    - `color::String`: The color of the polygon.
-    - `opc`: The opacity of the polygon. Default is 1.
-"""
-function polygons(pts::Vector{Vector{<:Real}}, color::String, opc::Real=1)
-    @assert all(length.(pts) .== 3)
-
-    N = length(pts)
-    sort_pts!(pts)
-    x = []
-    y = []
-    z = []
-    for i in eachindex(pts)
-        push!(x, pts[i][1])
-        push!(y, pts[i][2])
-        push!(z, pts[i][3])
-    end
-
-    mid = zeros(3)
-    for n in eachindex(pts)
-        for m in 1:3
-            mid[m] += pts[n][m]
-        end
-    end
-    mid = mid ./ N
-    push!(x, mid[1])
-    push!(y, mid[2])
-    push!(z, mid[3])
-
-    a = 0:1:length(pts)
-    i = []
-    j = []
-    k = []
-
-    for n = 0:length(a)-2
-        push!(i, a[mod(n + 0, length(a) - 1)+1])
-        push!(j, a[mod(n + 1, length(a) - 1)+1])
-        push!(k, a[end])
-    end
-
-    return mesh3d(x=x, y=y, z=z,
-        i=i, j=j, k=k,
-        color=color,
-        opacity=opc,
-        alphahull=1,
-        lighting=attr(
-            diffuse=0.1,
-            specular=1.2,
-            roughness=1.0
-        ),
-    )
-end
-
-"""
     ellipsoids(origin::Vector{<:Real}, par::Vector{<:Real}, color::String, opc::Real=1, tres=60, pres=30)
 
     Creates a 3D ellipsoid mesh.
@@ -224,6 +165,8 @@ end
     - `style`: The line style (e.g., "solid", "dash"). Default is "".
 """
 function lines(pt1::Vector{<:Real}, pt2::Vector{<:Real}, color::String, opc::Real=1, style="")
+    @assert length(pt1) == 3
+    @assert length(pt2) == 3
 
     x = [pt1[1], pt2[1]]
     y = [pt1[2], pt2[2]]
@@ -242,22 +185,90 @@ function lines(pt1::Vector{<:Real}, pt2::Vector{<:Real}, color::String, opc::Rea
     )
 end
 
-
-
 """
-    create_mesh(pts::Vector{Vector{<:Real}}, ng::Int, color::String, opc::Real=1)
+    polygons(pts::Vector, color::String, opc::Real=1)
 
-    Creates a mesh from a set of points and a specified Real of vertices per polygon.
+    Creates a polygon mesh from a set of points (form around the mid point of the set of points).
 
     # Arguments
-    - `pts::Vector{Vector{<:Real}}`: List of points defining the mesh.
-    - `ng::Int`: Real of vertices per polygon.
+    - `pts::::Vector`: List of points defining the polygon.
+    - `color::String`: The color of the polygon.
+    - `opc`: The opacity of the polygon. Default is 1.
+"""
+function polygons(pts::Vector, color::String, opc::Real=1)
+    @assert all(length.(pts) .== 3)
+    for vec in pts
+        for num in vec
+            @assert isreal(num) 
+        end
+    end
+
+    N = length(pts)
+    pts_copy = sort_pts(pts)
+    x = []
+    y = []
+    z = []
+    for i in eachindex(pts_copy)
+        push!(x, pts_copy[i][1])
+        push!(y, pts_copy[i][2])
+        push!(z, pts_copy[i][3])
+    end
+
+    mid = zeros(3)
+    for n in eachindex(pts_copy)
+        for m in 1:3
+            mid[m] += pts_copy[n][m]
+        end
+    end
+    mid = mid ./ N
+    push!(x, mid[1])
+    push!(y, mid[2])
+    push!(z, mid[3])
+
+    a = 0:1:length(pts)
+    i = []
+    j = []
+    k = []
+
+    for n = 0:length(a)-2
+        push!(i, a[mod(n + 0, length(a) - 1)+1])
+        push!(j, a[mod(n + 1, length(a) - 1)+1])
+        push!(k, a[end])
+    end
+
+    return mesh3d(x=x, y=y, z=z,
+        i=i, j=j, k=k,
+        color=color,
+        opacity=opc,
+        alphahull=1,
+        lighting=attr(
+            diffuse=0.1,
+            specular=1.2,
+            roughness=1.0
+        ),
+    )
+end
+
+"""
+    polygons(pts::Vector, ng::Int, color::String, opc::Real=1)
+
+    Creates a group of polygons from a set of points and a specified number of vertices per polygon.
+
+    # Arguments
+    - `pts::Vector`: List of points defining the mesh.
+    - `ng::Int`: Number of vertices per polygon.
     - `color::String`: The color of the mesh.
     - `opc`: The opacity of the mesh. Default is 1.
 """
-function create_mesh(pts::Vector{Vector{<:Real}}, ng::Int, color::String, opc::Real=1)
+function polygons(pts::Vector, ng::Int, color::String, opc::Real=1)
     @assert all(length.(pts) .== 3)
-
+    for vec in pts
+        for num in vec
+            @assert isreal(num) 
+        end
+    end
+    @assert ng > 0
+    
     N = length(pts)
 
     x = []
@@ -377,14 +388,72 @@ function rot!(geo::GenericTrace, rotang::Vector{<:Real}, center::Vector{<:Real}=
 end
 
 """
-    sort_pts!(pts::Vector{Vector{<:Real}})
+    sort_pts(pts::Vector)
 
     Sorts points in place based on their angular position relative to the centroid.
 
     # Arguments
-    - `pts::Vector{Vector{<:Real}}`: List of points to be sorted.
+    - `pts::Vector`: List of points to be sorted.
 """
-function sort_pts!(pts::Vector{Vector{<:Real}})
+function sort_pts(pts::Vector)
+    @assert all(length.(pts) .== 3)
+
+    N = length(pts)
+    ang = zeros(length(pts))
+    mid = zeros(3)
+    for n in eachindex(pts)
+        for m in 1:3
+            mid[m] += pts[n][m]
+        end
+    end
+    mid = mid ./ N
+
+    c = collect(combinations(1:N, 3))
+    thtr = 0
+    phir = 0
+    for n in eachindex(c)
+        vec = cross(pts[c[n][2]] .- pts[c[n][1]], pts[c[n][3]] .- pts[c[n][1]])
+        if norm(vec) == 0
+            continue
+        else
+            vec = vec ./ norm(vec)
+            thtr = acosd(vec[3])
+            phir = atand(vec[2], vec[1])
+            break
+        end
+    end
+
+    Ry = [
+        cosd(thtr) 0 -sind(thtr);
+        0 1 0;
+        sind(thtr) 0 cosd(thtr)
+    ]
+    Rz = [
+        cosd(phir) sind(phir) 0;
+        -sind(phir) cosd(phir) 0;
+        0 0 1
+    ]
+    R = Ry * Rz
+    pts_rot = similar(pts)
+    mid_rot = R * mid
+    for n in eachindex(pts)
+        pts_rot[n] = R * pts[n]
+        ang[n] = atan(pts_rot[n][2] - mid_rot[2], pts_rot[n][1] - mid_rot[1])
+    end
+    pts_rot .= pts[sortperm(ang)]
+
+    return pts_rot
+end
+
+"""
+    sort_pts!(pts::Vector)
+
+    Sorts points in place based on their angular position relative to the centroid.
+
+    # Arguments
+    - `pts::Vector`: List of points to be sorted.
+"""
+function sort_pts!(pts::Vector)
     @assert all(length.(pts) .== 3)
 
     N = length(pts)
@@ -432,8 +501,6 @@ function sort_pts!(pts::Vector{Vector{<:Real}})
     pts .= pts[sortperm(ang)]
 end
 
-
-
 """
     add_ref_axes(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, r::Real)
 
@@ -444,7 +511,7 @@ end
     - `origin::Vector{<:Real}`: The origin point of the axes.
     - `r::Real`: The length of the reference axes.
 """
-function add_ref_axes(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, r::Real)
+function add_ref_axes(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}=[0, 0, 0], r::Real=1)
     @assert length(origin) == 3
     @assert r > 0
 
