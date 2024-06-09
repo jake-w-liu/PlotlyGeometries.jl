@@ -18,13 +18,21 @@ add_ref_axes(fig, [0, 0, 0], 1)
 display(fig)
 
 # create ellipsoid
-e1 = ellipsoids([0, 5, 0], [3, 1, 1], "purple", 0.2)
+e1 = ellipsoids([0, 5, 0], [3, 1, 1], "purple", 0.1)
 
 # rotate ellipsoid (Tait–Bryan angles)
 rot!(e1, [10, 20, 30])
 
 # add elipsoid to figure
-add_trace!(fig, e1)
+addtraces!(fig, e1)
+
+# create sphere
+s1 = spheres([3, -2, 0], 2, "coral", 0.1)
+addtraces!(fig, s1)
+
+# add line
+l1 = lines([2, 4, 6], [0, 5, 0], "orange", 1, "dash")
+addtraces!(fig, l1)
 
 # add arrow and text 
 add_arrows(fig, [2, 4, 8], [0, 0, -1], "black", 1/4)
