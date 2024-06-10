@@ -194,3 +194,29 @@ Adds reference axes (x, y, z) to a plot.
 - `r::Real`: The length of the reference axes.
 ___
 
+#### add_arrows
+
+```julia
+add_arrows(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, dir::Vector{<:Real}, color::String, opc::Real=1)
+```
+
+Creates a 3D arrow starting from a point and pointing in a given direction.
+
+- `plt::PlotlyJS.SyncPlot`: The plot to which the axes will be added.
+- `origin::Vector{<:Real}`: The starting point of the arrow.
+- `dir::Vector{<:Real}`: The direction vector of the arrow.
+- `color::String`: The color of the arrow.
+- `len::Real`: length of the arrow
+- `opc`: The opacity of the arrow. Default is 1.
+- `mode`: Default `norm` sets the arrow length to 1.
+
+___
+
+#### blank_layout
+
+```julia
+blank_layout()
+```
+
+Return blank layout.
+___
