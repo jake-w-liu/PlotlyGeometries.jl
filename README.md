@@ -21,4 +21,8 @@ Pkg.add("PlotlyGeometries")
 Go to the examples folder to get familiar with some basic usages:
 
 - `ex_basics.jl`: Some basic geometry creation/transformation stuff.
-- `ex_polygons.jl`: Use polygons to build geometries. 
+- `ex_polygons.jl`: Use polygons to build geometries.
+
+## Usage
+
+Please refer to the [user manual](./docs/MANUAL.md) in the docs folder.
