@@ -29,7 +29,6 @@ function cubes(origin::Vector{<:Real}, dimension::Vector{<:Real}, color::String,
 
     return mesh3d(x=x, y=y, z=z,
         i=i, j=j, k=k,
-        alphahull=1,
         flatshading=true,
         color=color,
         opacity=opc,
@@ -82,7 +81,6 @@ function squares(origin::Vector{<:Real}, side::Real, color::String, mode::String
     return mesh3d(x=x, y=y, z=z, i=i, j=j, k=k,
         color=color,
         opacity=opc,
-        alphahull=1,
         lighting=attr(
             diffuse=0.1,
             specular=1.2,
@@ -120,7 +118,6 @@ function ellipsoids(origin::Vector{<:Real}, par::Vector{<:Real}, color::String, 
     z = z[:]
 
     return mesh3d(x=x, y=y, z=z,
-        alphahull=0,
         flatshading=true,
         color=color,
         opacity=opc,
@@ -179,7 +176,7 @@ function lines(pt1::Vector{<:Real}, pt2::Vector{<:Real}, color::String, opc::Rea
             dash=style,
         ),
         showlegend=false,
-        alphahull=1,
+        
         flatshading=true,
         opacity=opc,
     )
@@ -240,7 +237,6 @@ function polygons(pts::Vector, color::String, opc::Real=1)
         i=i, j=j, k=k,
         color=color,
         opacity=opc,
-        alphahull=1,
         lighting=attr(
             diffuse=0.1,
             specular=1.2,
@@ -313,7 +309,6 @@ function polygons(pts::Vector, ng::Int, color::String, opc::Real=1)
         i=i, j=j, k=k,
         color=color,
         opacity=opc,
-        alphahull=1,
         lighting=attr(
             diffuse=0.1,
             specular=1.2,

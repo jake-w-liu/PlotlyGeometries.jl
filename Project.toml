@@ -1,7 +1,7 @@
 name = "PlotlyGeometries"
 uuid = "da4dd95e-df4f-4caf-ac06-cee3b0f5c2e6"
 authors = ["Jake W. Liu"]
-version = "1.0.0"
+version = "1.0.1"
 
 [deps]
 Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
