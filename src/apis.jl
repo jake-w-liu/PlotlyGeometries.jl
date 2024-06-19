@@ -90,7 +90,7 @@ function squares(origin::Vector{<:Real}, side::Real, color::String, mode::String
 end
 
 """
-    ellipsoids(origin::Vector{<:Real}, par::Vector{<:Real}, color::String, opc::Real=1, tres=60, pres=30)
+    ellipsoids(origin::Vector{<:Real}, par::Vector{<:Real}, color::String, opc::Real=1, tres=60, pres=30; ah::Real=0)
 
     Creates a 3D ellipsoid mesh.
 
@@ -101,8 +101,11 @@ end
     - `opc`: The opacity of the ellipsoid. Default is 1.
     - `tres`: The resolution of the mesh grid (theta). Default is 60.
     - `pres`: The resolution of the mesh grid (phi). Default is 30.
+
+    # Keywords
+    - `ah`: alphahole value.
 """
-function ellipsoids(origin::Vector{<:Real}, par::Vector{<:Real}, color::String, opc::Real=1, tres=60, pres=30)
+function ellipsoids(origin::Vector{<:Real}, par::Vector{<:Real}, color::String, opc::Real=1, tres=60, pres=30; ah::Real=0)
     @assert length(origin) == 3
     @assert length(par) == 3
     @assert all(par .> 0) 
@@ -118,6 +121,7 @@ function ellipsoids(origin::Vector{<:Real}, par::Vector{<:Real}, color::String, 
     z = z[:]
 
     return mesh3d(x=x, y=y, z=z,
+        alphahull=ah,
         flatshading=true,
         color=color,
         opacity=opc,
@@ -141,12 +145,15 @@ end
     - `opc`: The opacity of the ellipsoid. Default is 1.
     - `tres`: The resolution of the mesh grid (theta). Default is 60.
     - `pres`: The resolution of the mesh grid (phi). Default is 30.
+
+    # Keywords
+    - `ah`: alphahole value.
 """
-function spheres(origin::Vector{<:Real}, r::Real, color::String, opc::Real=1, tres=60, pres=30)
+function spheres(origin::Vector{<:Real}, r::Real, color::String, opc::Real=1, tres=60, pres=30; ah::Real=0)
     @assert length(origin) == 3
     @assert r > 0
     
-    return  ellipsoids(origin, [r, r, r], color, opc, tres, pres) 
+    return  ellipsoids(origin, [r, r, r], color, opc, tres, pres, ah=ah) 
 end
 
 """
@@ -183,7 +190,7 @@ function lines(pt1::Vector{<:Real}, pt2::Vector{<:Real}, color::String, opc::Rea
 end
 
 """
-    polygons(pts::Vector, color::String, opc::Real=1)
+    polygons(pts::Vector, color::String, opc::Real=1; ah::Real=0)
 
     Creates a polygon mesh from a set of points (form around the mid point of the set of points).
 
@@ -191,8 +198,11 @@ end
     - `pts::::Vector`: List of points defining the polygon.
     - `color::String`: The color of the polygon.
     - `opc`: The opacity of the polygon. Default is 1.
+
+    # Keywords
+    - `ah`: alphahole value.
 """
-function polygons(pts::Vector, color::String, opc::Real=1)
+function polygons(pts::Vector, color::String, opc::Real=1; ah::Real=0)
     @assert all(length.(pts) .== 3)
     for vec in pts
         for num in vec
@@ -235,6 +245,7 @@ function polygons(pts::Vector, color::String, opc::Real=1)
 
     return mesh3d(x=x, y=y, z=z,
         i=i, j=j, k=k,
+        alphahull=ah,
         color=color,
         opacity=opc,
         lighting=attr(
@@ -246,7 +257,7 @@ function polygons(pts::Vector, color::String, opc::Real=1)
 end
 
 """
-    polygons(pts::Vector, ng::Int, color::String, opc::Real=1)
+    polygons(pts::Vector, ng::Int, color::String, opc::Real=1; ah::Real=0)
 
     Creates a group of polygons from a set of points and a specified number of vertices per polygon.
 
@@ -255,8 +266,11 @@ end
     - `ng::Int`: Number of vertices per polygon.
     - `color::String`: The color of the mesh.
     - `opc`: The opacity of the mesh. Default is 1.
+
+    # Keywords
+    - `ah`: alphahole value.
 """
-function polygons(pts::Vector, ng::Int, color::String, opc::Real=1)
+function polygons(pts::Vector, ng::Int, color::String, opc::Real=1; ah::Real=0)
     @assert all(length.(pts) .== 3)
     for vec in pts
         for num in vec
@@ -307,6 +321,7 @@ function polygons(pts::Vector, ng::Int, color::String, opc::Real=1)
 
     return mesh3d(x=x, y=y, z=z,
         i=i, j=j, k=k,
+        alphahull=ah,
         color=color,
         opacity=opc,
         lighting=attr(

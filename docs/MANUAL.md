@@ -44,7 +44,7 @@ ___
 #### ellipsoids
 
 ```julia
-ellipsoids(origin::Vector{<:Real}, par::Vector{<:Real}, color::String, opc::Real=1, tres=60, pres=30)
+ellipsoids(origin::Vector{<:Real}, par::Vector{<:Real}, color::String, opc::Real=1, tres=60, pres=30; ah::Real=0)
 ```
 
 Creates a 3D ellipsoid mesh.
@@ -56,13 +56,13 @@ Creates a 3D ellipsoid mesh.
 - `opc::Real`: The opacity of the ellipsoid. Default is 1.
 - `tres`: The resolution of the mesh grid (theta). Default is 60.
 - `pres`: The resolution of the mesh grid (phi). Default is 30.
-
+- `ah`: alphahole value.
 ___
 
 #### spheres
 
 ```julia
-spheres(origin::Vector{<:Real}, r::Real, color::String, opc::Real=1, tres=60, pres=30)
+spheres(origin::Vector{<:Real}, r::Real, color::String, opc::Real=1, tres=60, pres=30; ah::Real=0)
 ```
 
 Creates a 3D sphere mesh.
@@ -74,6 +74,7 @@ Creates a 3D sphere mesh.
 - `opc::Real`: The opacity of the sphere. Default is 1.
 - `tres`: The resolution of the mesh grid (theta). Default is 60.
 - `pres`: The resolution of the mesh grid (phi). Default is 30.
+- `ah`: alphahole value.
 
 ___
 
@@ -97,7 +98,7 @@ ___
 #### polygons
 
 ```julia
-polygons(pts::Vector, color::String, opc::Real=1)
+polygons(pts::Vector, color::String, opc::Real=1; ah::Real=0)
 ```
 
 Creates a polygon mesh from a set of points.
@@ -106,9 +107,10 @@ Creates a polygon mesh from a set of points.
 - `pts::Vector`: List of points defining the polygon.
 - `color::String`: The color of the polygon.
 - `opc::Real`: The opacity of the polygon. Default is 1.
+- `ah`: alphahole value.
 
 ```julia
-polygons(::Vector, ng::Int, color::String, opc::Real=1)
+polygons(::Vector, ng::Int, color::String, opc::Real=1; ah::Real=0)
 ```
 
 Creates a group of polygons from a set of points and a specified number of vertices per polygon.
@@ -118,6 +120,7 @@ Creates a group of polygons from a set of points and a specified number of verti
 - `ng::Int`: Number of vertices per polygon.
 - `color::String`: The color of the mesh.
 - `opc::Real`: The opacity of the mesh. Default is 1.
+- `ah`: alphahole value.
 
 ___
 
