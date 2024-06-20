@@ -103,7 +103,7 @@ end
     - `pres`: The resolution of the mesh grid (phi). Default is 30.
 
     # Keywords
-    - `ah`: alphahole value.
+    - `ah`: alphahull value.
 """
 function ellipsoids(origin::Vector{<:Real}, par::Vector{<:Real}, color::String, opc::Real=1, tres=60, pres=30; ah::Real=0)
     @assert length(origin) == 3
@@ -147,7 +147,7 @@ end
     - `pres`: The resolution of the mesh grid (phi). Default is 30.
 
     # Keywords
-    - `ah`: alphahole value.
+    - `ah`: alphahull value.
 """
 function spheres(origin::Vector{<:Real}, r::Real, color::String, opc::Real=1, tres=60, pres=30; ah::Real=0)
     @assert length(origin) == 3
@@ -200,7 +200,7 @@ end
     - `opc`: The opacity of the polygon. Default is 1.
 
     # Keywords
-    - `ah`: alphahole value.
+    - `ah`: alphahull value.
 """
 function polygons(pts::Vector, color::String, opc::Real=1; ah::Real=0)
     @assert all(length.(pts) .== 3)
@@ -268,7 +268,7 @@ end
     - `opc`: The opacity of the mesh. Default is 1.
 
     # Keywords
-    - `ah`: alphahole value.
+    - `ah`: alphahull value.
 """
 function polygons(pts::Vector, ng::Int, color::String, opc::Real=1; ah::Real=0)
     @assert all(length.(pts) .== 3)
@@ -352,7 +352,7 @@ end
 """
     rot!(geo::GenericTrace, rotang::Vector{<:Real}, center::Vector{<:Real}=[0])
 
-    Rotates a 3D geometry around a specified center point.
+    Rotates a 3D geometry around a specified center point. (Tait–Bryan rotation)
 
     # Arguments
     - `geo::GenericTrace`: The 3D geometry to be rotated, which must have `x`, `y`, and `z` coordinates.
@@ -395,6 +395,45 @@ function rot!(geo::GenericTrace, rotang::Vector{<:Real}, center::Vector{<:Real}=
         geo.y[n] = vec[2] + center[2]
         geo.z[n] = vec[3] + center[3]
     end
+end
+
+"""
+    rot!(geo::GenericTrace, ang::Real, axis::Vector{<:Real}, origin::Vector{<:Real}=[0])
+
+    Rotates the geometry by the specified angle `ang` around the axis `axis` and origin `origin`.
+    
+    # Arguments
+    - `geo::GenericTrace`: The geometry to be rotated.
+    - `ang::Real`: The rotation angle.
+    - `axis::Vector{<:Real}`: The rotation axis.
+    - `origin::Vector{<:Real}=[0]`: The rotation origin. Defaults to the center of the geometry if not specified.
+"""
+function rot!(geo::GenericTrace, ang::Real, axis::Vector{<:Real}, origin::Vector{<:Real}=[0])
+    @assert length(axis) == 3
+
+    pos = []
+    for n in eachindex(geo.x)
+        push!(pos, [geo.x[n], geo.y[n], geo.z[n]])
+    end
+
+    axis = axis ./ norm(axis)
+    vrot = similar(pos)
+    
+    if origin == [0] # rotation center set at the geometry center
+        origin = sum(pos) ./ length(pos)
+    else
+        @assert length(origin) == 3
+    end
+
+    for n in eachindex(vrot)
+        v = (pos[n] .- origin)
+        vrot[n] = cosd(ang) * v + sind(ang) * cross(axis, v) + (1-cosd(ang)) * dot(axis, v) * axis
+        pos[n] = vrot[n] .+ origin
+    end
+
+    geo.x = getindex.(pos, 1)
+    geo.y = getindex.(pos, 2)
+    geo.z = getindex.(pos, 3)
 end
 
 """

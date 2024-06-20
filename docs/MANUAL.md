@@ -56,7 +56,7 @@ Creates a 3D ellipsoid mesh.
 - `opc::Real`: The opacity of the ellipsoid. Default is 1.
 - `tres`: The resolution of the mesh grid (theta). Default is 60.
 - `pres`: The resolution of the mesh grid (phi). Default is 30.
-- `ah`: alphahole value.
+- `ah`: alphahull value.
 ___
 
 #### spheres
@@ -74,7 +74,7 @@ Creates a 3D sphere mesh.
 - `opc::Real`: The opacity of the sphere. Default is 1.
 - `tres`: The resolution of the mesh grid (theta). Default is 60.
 - `pres`: The resolution of the mesh grid (phi). Default is 30.
-- `ah`: alphahole value.
+- `ah`: alphahull value.
 
 ___
 
@@ -107,7 +107,7 @@ Creates a polygon mesh from a set of points.
 - `pts::Vector`: List of points defining the polygon.
 - `color::String`: The color of the polygon.
 - `opc::Real`: The opacity of the polygon. Default is 1.
-- `ah`: alphahole value.
+- `ah`: alphahull value.
 
 ```julia
 polygons(::Vector, ng::Int, color::String, opc::Real=1; ah::Real=0)
@@ -120,7 +120,7 @@ Creates a group of polygons from a set of points and a specified number of verti
 - `ng::Int`: Number of vertices per polygon.
 - `color::String`: The color of the mesh.
 - `opc::Real`: The opacity of the mesh. Default is 1.
-- `ah`: alphahole value.
+- `ah`: alphahull value.
 
 ___
 
@@ -152,6 +152,22 @@ Rotates a 3D geometry around a specified center point.
 - `geo::GenericTrace`: The 3D geometry to be rotated, which must have `x`, `y`, and `z` coordinates.
 - `rotang::Vector{<:Real}`: A vector of three Tait–Bryan rotation angles in degrees for rotations around the x, y, and z axes respectively.
 - `center::Vector{<:Real}`: The center point of rotation. Default is `[0]`, which means the rotation center will be set at the geometric center of the object.
+
+___
+
+#### rot!
+
+```julia
+rot!(geo::GenericTrace, ang::Real, axis::Vector{<:Real}, origin::Vector{<:Real}=[0])
+```
+
+Rotates the geometry by the specified angle `ang` around the axis `axis` and origin `origin`.
+
+
+- `geo::GenericTrace`: The geometry to be rotated.
+- `ang::Real`: The rotation angle.
+- `axis::Vector{<:Real}`: The rotation axis.
+- `origin::Vector{<:Real}=[0]`: The rotation origin. Defaults to the center of the geometry if not specified.
 
 ___
 

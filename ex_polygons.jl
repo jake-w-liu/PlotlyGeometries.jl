@@ -1,4 +1,6 @@
-push!(LOAD_PATH, "../src")
+using Pkg, Revise
+Pkg.activate(".")
+
 using PlotlyJS
 using PlotlyGeometries
 

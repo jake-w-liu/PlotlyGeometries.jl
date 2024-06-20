@@ -1,4 +1,6 @@
-push!(LOAD_PATH, "../src")
+using Pkg, Revise
+Pkg.activate(".")
+
 using PlotlyJS
 using PlotlyGeometries
 
@@ -7,6 +9,9 @@ c1 = cubes([0, 0, 0], [1, 2, 3], "pink", 0.2)
 
 # translate the cube
 trans!(c1, [2, 4, 6])
+
+# rotate cube (rotation according to axis)
+rot!(c1, 45, [0, 0, 1])
 
 # create fig with PlotlyJS (use blank_layout() to easily create a blank layout)
 fig = plot(c1, blank_layout())
@@ -22,6 +27,8 @@ e1 = ellipsoids([0, 5, 0], [3, 1, 1], "purple", 0.1)
 
 # rotate ellipsoid (Tait–Bryan angles)
 rot!(e1, [10, 20, 30])
+
+
 
 # add elipsoid to figure
 addtraces!(fig, e1)
