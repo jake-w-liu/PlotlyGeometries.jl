@@ -20,7 +20,7 @@ Pkg.add("PlotlyGeometries")
 
 ## Learn by Examples
 
-Please refer to the eexamples to get familiar with some basic usages:
+Please refer to the examples to get familiar with some basic usages:
 
 - `ex_basics.jl`: Some basic geometry creation/transformation stuff.
 - `ex_polygons.jl`: Use polygons to build geometries.

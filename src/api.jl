@@ -1,5 +1,5 @@
 """
-    cubes(origin::Vector{<:Real}, dimension::Vector{<:Real}, color::String, opc::Real=1)
+    cuboids(origin::Vector{<:Real}, dimension::Vector{<:Real}, color::String=""; opc::Real=1)
 
     Creates a 3D box mesh centered at the given origin with specified dimensions and color.
 
@@ -7,11 +7,18 @@
     - `origin::Vector{<:Real}`: A vector of three Reals specifying the center of the box.
     - `dimension::Vector{<:Real}`: A vector of three Reals specifying the dimensions (width, height, depth) of the box.
     - `color::String`: A string specifying the color of the box.
+    
+    # Keywords
     - `opc`: (optional) A Real specifying the opacity of the box. Default is 1.                                   
 """
-function cubes(origin::Vector{<:Real}, dimension::Vector{<:Real}, color::String, opc::Real=1)
+function cuboids(origin::Vector{<:Real}, dimension::Vector{<:Real}, color::String=""; opc::Real=1)
     @assert length(origin) == 3
     @assert length(dimension) == 3
+
+    if color == ""
+        @all r g b = round(Int, rand() * 255)
+        color = "rgb($r, $g, $b)"
+    end
 
     x1 = origin[1] - dimension[1] / 2
     x2 = origin[1] + dimension[1] / 2
@@ -41,8 +48,28 @@ function cubes(origin::Vector{<:Real}, dimension::Vector{<:Real}, color::String,
 end
 
 """
-    squares(origin::Vector{<:Real}, side::Real, color::String, mode::String="z", opc::Real=1)
+    cubes(origin::Vector{<:Real}, side::Real, color::String=""; opc::Real=1)
 
+    Creates a 3D cube mesh centered at the given origin with specified dimensions and color.
+
+    # Arguments
+    - `origin::Vector{<:Real}`: A vector of three Reals specifying the center of the cube.
+    - `side::Real`: Side length of the cube.
+    - `color::String`: A string specifying the color of the cube.
+    
+    # Keywords
+    - `opc`: (optional) A Real specifying the opacity of the cube. Default is 1.                                   
+"""
+function cubes(origin::Vector{<:Real}, side::Real, color::String=""; opc::Real=1)
+    @assert length(origin) == 3
+    @assert side > 0 
+
+    return cuboids(origin, [side, side, side], color; opc=opc)
+end
+
+"""
+    squares(origin::Vector{<:Real}, side::Real, color::String="", mode::String="z"; opc::Real=1)
+    
     Creates a 2D square mesh centered at the given origin with the specified side length and color.
 
     # Arguments
@@ -50,10 +77,17 @@ end
     - `side::Real`: A Real specifying the side length of the square.
     - `color::String`: A string specifying the color of the square.
     - `mode`::String: (optional) A string specifying the orientation of the square ("x", "y", or "z"). Default is "z".
+    
+    # Keywords
     - `opc`: (optional) A Real specifying the opacity of the square. Default is 1.
 """
-function squares(origin::Vector{<:Real}, side::Real, color::String, mode::String="z", opc::Real=1)
+function squares(origin::Vector{<:Real}, side::Real, color::String="", mode::String="z"; opc::Real=1)
     @assert length(origin) == 3
+
+    if color == ""
+        @all r g b = round(Int, rand() * 255)
+        color = "rgb($r, $g, $b)"
+    end
 
     if mode == "x"
         x = [origin[1], origin[1], origin[1], origin[1]]
@@ -90,7 +124,7 @@ function squares(origin::Vector{<:Real}, side::Real, color::String, mode::String
 end
 
 """
-    ellipsoids(origin::Vector{<:Real}, par::Vector{<:Real}, color::String, opc::Real=1, tres=60, pres=30; ah::Real=0)
+    ellipsoids(origin::Vector{<:Real}, par::Vector{<:Real}, color::String=""; opc::Real=1, tres=61, pres=31, ah::Real=0)
 
     Creates a 3D ellipsoid mesh.
 
@@ -98,17 +132,24 @@ end
     - `origin::Vector{<:Real}`: The center of the ellipsoid.
     - `par::Vector{<:Real}`: Parameters of the ellipsoid (a, b, c).
     - `color::String`: The color of the ellipsoid.
-    - `opc`: The opacity of the ellipsoid. Default is 1.
-    - `tres`: The resolution of the mesh grid (theta). Default is 60.
-    - `pres`: The resolution of the mesh grid (phi). Default is 30.
-
+    
     # Keywords
-    - `ah`: alphahull value.
+    - `opc`: The opacity of the ellipsoid. Default is 1.
+    - `tres`: The resolution of the mesh grid (theta). Default is 61.
+    - `pres`: The resolution of the mesh grid (phi). Default is 31.
+    - `ah`: alphahull value. Default is 0.
 """
-function ellipsoids(origin::Vector{<:Real}, par::Vector{<:Real}, color::String, opc::Real=1, tres=60, pres=30; ah::Real=0)
+function ellipsoids(origin::Vector{<:Real}, par::Vector{<:Real}, color::String=""; opc::Real=1, tres=61, pres=31, ah::Real=0)
     @assert length(origin) == 3
     @assert length(par) == 3
     @assert all(par .> 0) 
+    @assert tres > 0
+    @assert pres > 0
+
+    if color == ""
+        @all r g b = round(Int, rand() * 255)
+        color = "rgb($r, $g, $b)"
+    end
 
     phi = LinRange(0, 360, pres)
     tht = LinRange(0, 180, tres)
@@ -134,7 +175,7 @@ function ellipsoids(origin::Vector{<:Real}, par::Vector{<:Real}, color::String, 
 end
 
 """
-    spheres(origin::Vector{<:Real}, r::Real, color::String, opc::Real=1, tres=60, pres=30)
+    spheres(origin::Vector{<:Real}, r::Real, color::String=""; opc::Real=1, tres=60, pres=30, ah::Real=0)
 
     Creates a 3D sphere mesh.
 
@@ -142,22 +183,27 @@ end
     - `origin::Vector{<:Real}`: The center of the ellipsoid.
     - `r::Real`: Radius of the sphere.
     - `color::String`: The color of the ellipsoid.
+
+    # Keywords
     - `opc`: The opacity of the ellipsoid. Default is 1.
     - `tres`: The resolution of the mesh grid (theta). Default is 60.
     - `pres`: The resolution of the mesh grid (phi). Default is 30.
-
-    # Keywords
-    - `ah`: alphahull value.
+    - `ah`: alphahull value. Default is 0.
 """
-function spheres(origin::Vector{<:Real}, r::Real, color::String, opc::Real=1, tres=60, pres=30; ah::Real=0)
+function spheres(origin::Vector{<:Real}, r::Real, color::String=""; opc::Real=1, tres=60, pres=30, ah::Real=0)
     @assert length(origin) == 3
     @assert r > 0
+
+    if color == ""
+        @all r g b = round(Int, rand() * 255)
+        color = "rgb($r, $g, $b)"
+    end
     
-    return  ellipsoids(origin, [r, r, r], color, opc, tres, pres, ah=ah) 
+    return  ellipsoids(origin, [r, r, r], color; opc=opc, tres=tres, pres=pres, ah=ah) 
 end
 
 """
-    lines(pt1::Vector{<:Real}, pt2::Vector{<:Real}, color::String, opc::Real=1, style="")
+    lines(pt1::Vector{<:Real}, pt2::Vector{<:Real}, color::String; opc::Real=1, style="")
 
     Creates a 3D line between two points.
 
@@ -165,12 +211,19 @@ end
     - `pt1::Vector{<:Real}`: Starting point of the line.
     - `pt2::Vector{<:Real}`: Ending point of the line.
     - `color::String`: The color of the line.
+
+    # Keywords
     - `opc`: The opacity of the line. Default is 1.
     - `style`: The line style (e.g., "solid", "dash"). Default is "".
 """
-function lines(pt1::Vector{<:Real}, pt2::Vector{<:Real}, color::String, opc::Real=1, style="")
+function lines(pt1::Vector{<:Real}, pt2::Vector{<:Real}, color::String=""; opc::Real=1, style="")
     @assert length(pt1) == 3
     @assert length(pt2) == 3
+
+    if color == ""
+        @all r g b = round(Int, rand() * 255)
+        color = "rgb($r, $g, $b)"
+    end
 
     x = [pt1[1], pt2[1]]
     y = [pt1[2], pt2[2]]
@@ -183,27 +236,32 @@ function lines(pt1::Vector{<:Real}, pt2::Vector{<:Real}, color::String, opc::Rea
             dash=style,
         ),
         showlegend=false,
-        
         flatshading=true,
         opacity=opc,
     )
 end
 
 """
-    polygons(pts::Vector, color::String, opc::Real=1; ah::Real=0)
+    polygons(pts::Vector, color::String; opc::Real=1, ah::Real=0)
 
     Creates a polygon mesh from a set of points (form around the mid point of the set of points).
 
     # Arguments
     - `pts::::Vector`: List of points defining the polygon.
     - `color::String`: The color of the polygon.
-    - `opc`: The opacity of the polygon. Default is 1.
 
     # Keywords
-    - `ah`: alphahull value.
+    - `opc`: The opacity of the polygon. Default is 1.
+    - `ah`: alphahull value. Default is 0.
 """
-function polygons(pts::Vector, color::String, opc::Real=1; ah::Real=0)
+function polygons(pts::Vector, color::String=""; opc::Real=1, ah::Real=0)
     @assert all(length.(pts) .== 3)
+
+    if color == ""
+        @all r g b = round(Int, rand() * 255)
+        color = "rgb($r, $g, $b)"
+    end
+
     for vec in pts
         for num in vec
             @assert isreal(num) 
@@ -212,9 +270,7 @@ function polygons(pts::Vector, color::String, opc::Real=1; ah::Real=0)
 
     N = length(pts)
     pts_copy = sort_pts(pts)
-    x = []
-    y = []
-    z = []
+    @all x y z = []
     for i in eachindex(pts_copy)
         push!(x, pts_copy[i][1])
         push!(y, pts_copy[i][2])
@@ -257,7 +313,7 @@ function polygons(pts::Vector, color::String, opc::Real=1; ah::Real=0)
 end
 
 """
-    polygons(pts::Vector, ng::Int, color::String, opc::Real=1; ah::Real=0)
+    polygons(pts::Vector, ng::Int, color::String; opc::Real=1, ah::Real=0)
 
     Creates a group of polygons from a set of points and a specified number of vertices per polygon.
 
@@ -265,13 +321,19 @@ end
     - `pts::Vector`: List of points defining the mesh.
     - `ng::Int`: Number of vertices per polygon.
     - `color::String`: The color of the mesh.
-    - `opc`: The opacity of the mesh. Default is 1.
 
     # Keywords
+    - `opc`: The opacity of the mesh. Default is 1.
     - `ah`: alphahull value.
 """
-function polygons(pts::Vector, ng::Int, color::String, opc::Real=1; ah::Real=0)
+function polygons(pts::Vector, ng::Int, color::String=""; opc::Real=1, ah::Real=0)
     @assert all(length.(pts) .== 3)
+
+    if color == ""
+        @all r g b = round(Int, rand() * 255)
+        color = "rgb($r, $g, $b)"
+    end
+
     for vec in pts
         for num in vec
             @assert isreal(num) 
@@ -281,12 +343,7 @@ function polygons(pts::Vector, ng::Int, color::String, opc::Real=1; ah::Real=0)
     
     N = length(pts)
 
-    x = []
-    y = []
-    z = []
-    i = []
-    j = []
-    k = []
+    @all x y z i j k = []
     Ng = floor(Int, N / ng)
     for p = 1:Ng
         ptsg = []
@@ -333,7 +390,7 @@ function polygons(pts::Vector, ng::Int, color::String, opc::Real=1; ah::Real=0)
 end
 
 """
-    trans!(geo::GenericTrace, dis::Vector{<:Real})
+    gtrans!(geo::GenericTrace, dis::Vector{<:Real})
 
     Translates a 3D geometry by a specified displacement vector.
 
@@ -341,7 +398,7 @@ end
     - `geo::GenericTrace`: The geometry to translate.
     - `dis::Vector{<:Real}`: A vector of three Reals specifying the translation distances for the x, y, and z axes.
 """
-function trans!(geo::GenericTrace, dis::Vector{<:Real})
+function gtrans!(geo::GenericTrace, dis::Vector{<:Real})
     @inbounds for n in eachindex(geo.x)
         geo.x[n] += dis[1]
         geo.y[n] += dis[2]
@@ -350,7 +407,7 @@ function trans!(geo::GenericTrace, dis::Vector{<:Real})
 end
 
 """
-    rot!(geo::GenericTrace, rotang::Vector{<:Real}, center::Vector{<:Real}=[0])
+    grot!(geo::GenericTrace, rotang::Vector{<:Real}, center::Vector{<:Real}=[0])
 
     Rotates a 3D geometry around a specified center point. (Tait–Bryan rotation)
 
@@ -359,7 +416,7 @@ end
     - `rotang::Vector{<:Real}`: A vector of three Tait–Bryan rotation angles in degrees  for rotations around the x, y, and z axes respectively.
     - `center::Vector{<:Real}`: The center point of rotation. Default is `[0]`, which means the rotation center will be set at the geometric center of the object.
 """
-function rot!(geo::GenericTrace, rotang::Vector{<:Real}, center::Vector{<:Real}=[0])
+function grot!(geo::GenericTrace, rotang::Vector{<:Real}, center::Vector{<:Real}=[0])
     @assert length(rotang) == 3
 
     alpha = rotang[1]
@@ -398,7 +455,7 @@ function rot!(geo::GenericTrace, rotang::Vector{<:Real}, center::Vector{<:Real}=
 end
 
 """
-    rot!(geo::GenericTrace, ang::Real, axis::Vector{<:Real}, origin::Vector{<:Real}=[0])
+    grot!(geo::GenericTrace, ang::Real, axis::Vector{<:Real}, origin::Vector{<:Real}=[0])
 
     Rotates the geometry by the specified angle `ang` around the axis `axis` and origin `origin`.
     
@@ -408,7 +465,7 @@ end
     - `axis::Vector{<:Real}`: The rotation axis.
     - `origin::Vector{<:Real}=[0]`: The rotation origin. Defaults to the center of the geometry if not specified.
 """
-function rot!(geo::GenericTrace, ang::Real, axis::Vector{<:Real}, origin::Vector{<:Real}=[0])
+function grot!(geo::GenericTrace, ang::Real, axis::Vector{<:Real}, origin::Vector{<:Real}=[0])
     @assert length(axis) == 3
 
     pos = []
@@ -551,7 +608,7 @@ function sort_pts!(pts::Vector)
 end
 
 """
-    add_ref_axes(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, r::Real)
+    add_ref_axes!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, r::Real)
 
     Adds reference axes (x, y, z) to a plot.
 
@@ -560,7 +617,7 @@ end
     - `origin::Vector{<:Real}`: The origin point of the axes.
     - `r::Real`: The length of the reference axes.
 """
-function add_ref_axes(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}=[0, 0, 0], r::Real=1)
+function add_ref_axes!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}=[0, 0, 0], r::Real=1)
     @assert length(origin) == 3
     @assert r > 0
 
@@ -622,7 +679,7 @@ function add_ref_axes(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}=[0, 0, 0], 
 end
 
 """
-add_arrows(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, dir::Vector{<:Real}, color::String, opc::Real=1)
+    add_arrows!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, dir::Vector{<:Real}, len::Float64=1.0, color::String=""; opc::Real=1)
 
     Creates a 3D arrow starting from a point and pointing in a given direction.
 
@@ -630,15 +687,21 @@ add_arrows(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, dir::Vector{<:Real}, 
     - `plt::PlotlyJS.SyncPlot`: The plot to which the axes will be added.
     - `origin::Vector{<:Real}`: The starting point of the arrow.
     - `dir::Vector{<:Real}`: The direction vector of the arrow.
-    - `color::String`: The color of the arrow.
     - `len::Real`: length of the arrow
+    - `color::String`: The color of the arrow.
+
+    # Keywords
     - `opc`: The opacity of the arrow. Default is 1.
-    - `mode`: Default `norm` sets the arro length to 1, 
 """
-function add_arrows(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, dir::Vector{<:Real}, color::String, len::Float64=1.0, opc::Real=1)
+function add_arrows!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, dir::Vector{<:Real}, len::Float64=1.0, color::String=""; opc::Real=1)
     @assert length(origin) == 3
     @assert length(dir) == 3
     @assert len > 0
+
+    if color == ""
+        @all r g b = round(Int, rand() * 255)
+        color = "rgb($r, $g, $b)"
+    end
 
     dir = dir ./ norm(dir) .* len
 
@@ -658,7 +721,24 @@ function add_arrows(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, dir::Vector{
     addtraces!(plt, l)
 end
 
-function add_text(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, text::String, color::String)
+"""
+    add_text!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, text::String, color::String="")
+
+    Add text to plot. 
+
+    # Arguments
+    - plt::PlotlyJS.SyncPlot: Plot to add text.
+    - origin::Vector{<:Real}: origin of the text.
+    - text::String:: text to be added.
+    - color::String=: color of the text.
+"""
+function add_text!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, text::String, color::String="")
+
+    if color == ""
+        @all r g b = round(Int, rand() * 255)
+        color = "rgb($r, $g, $b)"
+    end
+
     addtraces!(plt, scatter3d(x=[origin[1]], y=[origin[2]], z=[origin[3]],
         mode="text", text=[text], textposition="middle center",
         textfont=attr(
