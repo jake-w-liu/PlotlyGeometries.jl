@@ -679,6 +679,79 @@ function add_ref_axes!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}=[0, 0, 0],
 end
 
 """
+    add_ref_axes!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, r::Vector{<:Real}=[1, 1, 1])
+
+    Adds reference axes (x, y, z) to a plot.
+
+    # Arguments
+    - `plt::PlotlyJS.SyncPlot`: The plot to which the axes will be added.
+    - `origin::Vector{<:Real}`: The origin point of the axes.
+    - `r::Vector{<:Real}`: The lengths of the reference axes.
+"""
+function add_ref_axes!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}=[0, 0, 0], r::Vector{<:Real}=[1, 1, 1])
+    @assert length(origin) == 3
+    @assert length(r) == 3
+    @assert al(r .> 0)
+    
+    csize = minimum([r[1] / 10, r[2] / 10, r[3] / 10])
+    cx = cone(x=[r[1] + origin[1]], y=[origin[2]], z=[origin[3]], u=[csize], v=[0], w=[0],
+        colorscale=[[0, "red"], [1, "red"]],
+        showscale=false)
+    cy = cone(x=[origin[1]], y=[r[2] + origin[2]], z=[origin[3]], u=[0], v=[csize], w=[0],
+        colorscale=[[0, "green"], [1, "green"]],
+        showscale=false)
+    cz = cone(x=[origin[1]], y=[origin[2]], z=[r[3] + origin[3]], u=[0], v=[0], w=[csize],
+        colorscale=[[0, "blue"], [1, "blue"]],
+        showscale=false)
+    lx = scatter3d(x=[origin[1], r[1] + origin[1]], y=[origin[2], origin[2]], z=[origin[3], origin[3]],
+        line=attr(color="red"),
+        mode="lines",
+        showlegend=false)
+    ly = scatter3d(x=[origin[1], origin[1]], y=[origin[2], r[2] + origin[2]], z=[origin[3], origin[3]],
+        line=attr(color="green"),
+        mode="lines",
+        showlegend=false)
+    lz = scatter3d(x=[origin[1], origin[1]], y=[origin[2], origin[2]], z=[origin[3], r[3] + origin[3]],
+        line=attr(color="blue"),
+        mode="lines",
+        showlegend=false)
+    addtraces!(plt, cx)
+    addtraces!(plt, cy)
+    addtraces!(plt, cz)
+    addtraces!(plt, lx)
+    addtraces!(plt, ly)
+    addtraces!(plt, lz)
+    relayout!(plt, scene=attr(
+        annotations=[
+            attr(
+                showarrow=false,
+                x=origin[1] + 1.1 * r[1],
+                y=origin[2],
+                z=origin[3],
+                text="x",
+                font=attr(color="red")
+            ),
+            attr(
+                showarrow=false,
+                x=origin[1],
+                y=origin[2] + 1.1 * r[2],
+                z=origin[3],
+                text="y",
+                font=attr(color="green")
+            ),
+            attr(
+                showarrow=false,
+                x=origin[1],
+                y=origin[2],
+                z=origin[3] + 1.1 * r[3],
+                text="z",
+                font=attr(color="blue")
+            ),
+        ]
+    ))
+end
+
+"""
     add_arrows!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, dir::Vector{<:Real}, len::Float64=1.0, color::String=""; opc::Real=1)
 
     Creates a 3D arrow starting from a point and pointing in a given direction.

@@ -1,7 +1,7 @@
 name = "PlotlyGeometries"
 uuid = "da4dd95e-df4f-4caf-ac06-cee3b0f5c2e6"
 authors = ["Jake W. Liu"]
-version = "2.0.0"
+version = "2.1.0"
 
 [deps]
 BatchAssign = "e837618a-1c15-48db-beb0-68297dffdb28"
