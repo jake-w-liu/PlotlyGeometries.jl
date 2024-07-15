@@ -233,7 +233,7 @@ ___
 #### add reference axis
 
 ```julia
-add_ref_axes!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, r::Real)
+add_ref_axes!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}=[0, 0, 0], r::Real=1)
 ```
 
 Adds reference axes (x, y, z) to a plot.
@@ -245,7 +245,7 @@ Adds reference axes (x, y, z) to a plot.
 ___
 
 ```julia
-add_ref_axes!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, r::Vector{<:Real}=[1, 1, 1])
+add_ref_axes!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, r::Vector{<:Real})
 ```
 
 Adds reference axes (x, y, z) to a plot.

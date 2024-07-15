@@ -283,7 +283,7 @@ function polygons(pts::Vector, color::String=""; opc::Real=1, ah::Real=0)
             mid[m] += pts_copy[n][m]
         end
     end
-    mid = mid ./ N
+    mid .= mid ./ N
     push!(x, mid[1])
     push!(y, mid[2])
     push!(z, mid[3])
@@ -363,7 +363,7 @@ function polygons(pts::Vector, ng::Int, color::String=""; opc::Real=1, ah::Real=
                 mid[m] += ptsg[n][m]
             end
         end
-        mid = mid ./ ng
+        mid .= mid ./ ng
         push!(x, mid[1])
         push!(y, mid[2])
         push!(z, mid[3])
@@ -473,7 +473,7 @@ function grot!(geo::GenericTrace, ang::Real, axis::Vector{<:Real}, origin::Vecto
         push!(pos, [geo.x[n], geo.y[n], geo.z[n]])
     end
 
-    axis = axis ./ norm(axis)
+    axis .= axis ./ norm(axis)
     vrot = similar(pos)
     
     if origin == [0] # rotation center set at the geometry center
@@ -512,7 +512,7 @@ function sort_pts(pts::Vector)
             mid[m] += pts[n][m]
         end
     end
-    mid = mid ./ N
+    mid .= mid ./ N
 
     c = collect(combinations(1:N, 3))
     thtr = 0
@@ -570,7 +570,7 @@ function sort_pts!(pts::Vector)
             mid[m] += pts[n][m]
         end
     end
-    mid = mid ./ N
+    mid .= mid ./ N
 
     c = collect(combinations(1:N, 3))
     thtr = 0
@@ -608,7 +608,7 @@ function sort_pts!(pts::Vector)
 end
 
 """
-    add_ref_axes!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, r::Real)
+    add_ref_axes!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}=[0, 0, 0], r::Real=1)
 
     Adds reference axes (x, y, z) to a plot.
 
@@ -679,7 +679,7 @@ function add_ref_axes!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}=[0, 0, 0],
 end
 
 """
-    add_ref_axes!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, r::Vector{<:Real}=[1, 1, 1])
+    add_ref_axes!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, r::Vector{<:Real})
 
     Adds reference axes (x, y, z) to a plot.
 
@@ -688,10 +688,10 @@ end
     - `origin::Vector{<:Real}`: The origin point of the axes.
     - `r::Vector{<:Real}`: The lengths of the reference axes.
 """
-function add_ref_axes!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}=[0, 0, 0], r::Vector{<:Real}=[1, 1, 1])
+function add_ref_axes!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, r::Vector{<:Real})
     @assert length(origin) == 3
     @assert length(r) == 3
-    @assert al(r .> 0)
+    @assert all(r .> 0)
     
     csize = minimum([r[1] / 10, r[2] / 10, r[3] / 10])
     cx = cone(x=[r[1] + origin[1]], y=[origin[2]], z=[origin[3]], u=[csize], v=[0], w=[0],
@@ -776,7 +776,7 @@ function add_arrows!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, dir::Vector
         color = "rgb($r, $g, $b)"
     end
 
-    dir = dir ./ norm(dir) .* len
+    dir .= dir ./ norm(dir) .* len
 
     c = cone(x=[origin[1] + dir[1] / 2], y=[origin[2] + dir[2] / 2], z=[origin[3] + dir[3] / 2], u=[dir[1]], v=[dir[2]], w=[dir[3]],
         colorscale=[[0, color], [1, color]],
