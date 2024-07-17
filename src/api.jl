@@ -62,7 +62,7 @@ end
 """
 function cubes(origin::Vector{<:Real}, side::Real, color::String=""; opc::Real=1)
     @assert length(origin) == 3
-    @assert side > 0 
+    @assert side > 0
 
     return cuboids(origin, [side, side, side], color; opc=opc)
 end
@@ -142,7 +142,7 @@ end
 function ellipsoids(origin::Vector{<:Real}, par::Vector{<:Real}, color::String=""; opc::Real=1, tres=61, pres=31, ah::Real=0)
     @assert length(origin) == 3
     @assert length(par) == 3
-    @assert all(par .> 0) 
+    @assert all(par .> 0)
     @assert tres > 0
     @assert pres > 0
 
@@ -198,8 +198,8 @@ function spheres(origin::Vector{<:Real}, r::Real, color::String=""; opc::Real=1,
         @all r g b = round(Int, rand() * 255)
         color = "rgb($r, $g, $b)"
     end
-    
-    return  ellipsoids(origin, [r, r, r], color; opc=opc, tres=tres, pres=pres, ah=ah) 
+
+    return ellipsoids(origin, [r, r, r], color; opc=opc, tres=tres, pres=pres, ah=ah)
 end
 
 """
@@ -264,7 +264,7 @@ function polygons(pts::Vector, color::String=""; opc::Real=1, ah::Real=0)
 
     for vec in pts
         for num in vec
-            @assert isreal(num) 
+            @assert isreal(num)
         end
     end
 
@@ -336,11 +336,11 @@ function polygons(pts::Vector, ng::Int, color::String=""; opc::Real=1, ah::Real=
 
     for vec in pts
         for num in vec
-            @assert isreal(num) 
+            @assert isreal(num)
         end
     end
     @assert ng > 0
-    
+
     N = length(pts)
 
     @all x y z i j k = []
@@ -475,7 +475,7 @@ function grot!(geo::GenericTrace, ang::Real, axis::Vector{<:Real}, origin::Vecto
 
     axis .= axis ./ norm(axis)
     vrot = similar(pos)
-    
+
     if origin == [0] # rotation center set at the geometry center
         origin = sum(pos) ./ length(pos)
     else
@@ -484,7 +484,7 @@ function grot!(geo::GenericTrace, ang::Real, axis::Vector{<:Real}, origin::Vecto
 
     for n in eachindex(vrot)
         v = (pos[n] .- origin)
-        vrot[n] = cosd(ang) * v + sind(ang) * cross(axis, v) + (1-cosd(ang)) * dot(axis, v) * axis
+        vrot[n] = cosd(ang) * v + sind(ang) * cross(axis, v) + (1 - cosd(ang)) * dot(axis, v) * axis
         pos[n] = vrot[n] .+ origin
     end
 
@@ -692,7 +692,7 @@ function add_ref_axes!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, r::Vector
     @assert length(origin) == 3
     @assert length(r) == 3
     @assert all(r .> 0)
-    
+
     csize = minimum([r[1] / 10, r[2] / 10, r[3] / 10])
     cx = cone(x=[r[1] + origin[1]], y=[origin[2]], z=[origin[3]], u=[csize], v=[0], w=[0],
         colorscale=[[0, "red"], [1, "red"]],
@@ -845,6 +845,34 @@ function blank_layout()
         ),
     )
     return layout
+end
+
+"""
+    set_view!(plt::PlotlyJS.SyncPlot, az::Real, el::Real, r::Real=1)
+
+    Set az/el (deg) view of the plot.
+
+    # Arguments
+    - plt::PlotlyJS.SyncPlot: plot to be modified.
+    - az::Real: az value.
+    - el::Real: el value.
+    - r::Real=1: distance.
+"""
+function set_view!(plt::PlotlyJS.SyncPlot, az::Real, el::Real, r::Real=1.25 * sqrt(3))
+    if el == 90
+        el -= 0.01
+    elseif el == -90
+        el += 0.01
+    end
+    x = r * cosd(el) * cosd(az)
+    y = r * cosd(el) * sind(az)
+    z = r * sind(el)
+    plt.plot.layout.scene_camera = attr(eye=attr(x=1.25, y=1.25, z=1.25))
+    plt.plot.layout.scene_camera[:eye][:x] = x
+    plt.plot.layout.scene_camera[:eye][:y] = y
+    plt.plot.layout.scene_camera[:eye][:z] = z
+    react!(plt, plt.plot.data, plt.plot.layout)
+    return nothing
 end
 
 

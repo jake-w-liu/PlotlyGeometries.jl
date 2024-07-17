@@ -43,3 +43,9 @@ push!(pts, [1, 0, 1])
 
 p3 = polygons(pts, 4, "yellow"; opc=0.5)
 addtraces!(fig, p3)
+
+for n = 0:360
+    set_view!(fig, n, 90)
+    sleep(0.1)
+end
+
