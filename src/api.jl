@@ -473,7 +473,7 @@ function grot!(geo::GenericTrace, ang::Real, axis::Vector{<:Real}, origin::Vecto
         push!(pos, [geo.x[n], geo.y[n], geo.z[n]])
     end
 
-    axis .= axis ./ norm(axis)
+    axis_norm = axis ./ norm(axis)
     vrot = similar(pos)
 
     if origin == [0] # rotation center set at the geometry center
@@ -482,9 +482,10 @@ function grot!(geo::GenericTrace, ang::Real, axis::Vector{<:Real}, origin::Vecto
         @assert length(origin) == 3
     end
 
+    v = similar(origin)
     for n in eachindex(vrot)
-        v = (pos[n] .- origin)
-        vrot[n] = cosd(ang) * v + sind(ang) * cross(axis, v) + (1 - cosd(ang)) * dot(axis, v) * axis
+        v .= (pos[n] .- origin)
+        vrot[n] = cosd(ang) * v + sind(ang) * cross(axis_norm, v) + (1 - cosd(ang)) * dot(axis_norm, v) * axis_norm
         pos[n] = vrot[n] .+ origin
     end
 
@@ -517,12 +518,14 @@ function sort_pts(pts::Vector)
     c = collect(combinations(1:N, 3))
     thtr = 0
     phir = 0
+
+    vec = similar(mid)
     for n in eachindex(c)
-        vec = cross(pts[c[n][2]] .- pts[c[n][1]], pts[c[n][3]] .- pts[c[n][1]])
+        vec .= cross(pts[c[n][2]] .- pts[c[n][1]], pts[c[n][3]] .- pts[c[n][1]])
         if norm(vec) == 0
             continue
         else
-            vec = vec ./ norm(vec)
+            vec .= vec ./ norm(vec)
             thtr = acosd(vec[3])
             phir = atand(vec[2], vec[1])
             break
@@ -575,12 +578,13 @@ function sort_pts!(pts::Vector)
     c = collect(combinations(1:N, 3))
     thtr = 0
     phir = 0
+    vec = similar(mid)
     for n in eachindex(c)
-        vec = cross(pts[c[n][2]] .- pts[c[n][1]], pts[c[n][3]] .- pts[c[n][1]])
+        vec .= cross(pts[c[n][2]] .- pts[c[n][1]], pts[c[n][3]] .- pts[c[n][1]])
         if norm(vec) == 0
             continue
         else
-            vec = vec ./ norm(vec)
+            vec .= vec ./ norm(vec)
             thtr = acosd(vec[3])
             phir = atand(vec[2], vec[1])
             break
@@ -605,6 +609,7 @@ function sort_pts!(pts::Vector)
         ang[n] = atan(pts_rot[n][2] - mid_rot[2], pts_rot[n][1] - mid_rot[1])
     end
     pts .= pts[sortperm(ang)]
+    return nothing
 end
 
 """
@@ -676,6 +681,7 @@ function add_ref_axes!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}=[0, 0, 0],
             ),
         ]
     ))
+    return nothing
 end
 
 """
@@ -749,11 +755,12 @@ function add_ref_axes!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, r::Vector
             ),
         ]
     ))
+    return nothing
 end
 
 """
-    add_arrows!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, dir::Vector{<:Real}, len::Float64=1.0, color::String=""; opc::Real=1)
-
+    add_arrows!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, dir::Vector{<:Real}, len::Real=1.0, color::String=""; opc::Real=1, endpoint::Bool=true, asize::Real=len)
+    
     Creates a 3D arrow starting from a point and pointing in a given direction.
 
     # Arguments
@@ -765,33 +772,47 @@ end
 
     # Keywords
     - `opc`: The opacity of the arrow. Default is 1.
+    - `asize` Size factor of the arrow cone. Default is `len`.
 """
-function add_arrows!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, dir::Vector{<:Real}, len::Float64=1.0, color::String=""; opc::Real=1)
+function add_arrows!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, dir::Vector{<:Real}, len::Real=1.0, color::String=""; opc::Real=1, endpoint::Bool=true, asize::Real=len)
     @assert length(origin) == 3
     @assert length(dir) == 3
     @assert len > 0
+    @assert asize > 0
 
     if color == ""
         @all r g b = round(Int, rand() * 255)
         color = "rgb($r, $g, $b)"
     end
 
-    dir .= dir ./ norm(dir) .* len
+    dir_norm = dir / norm(dir) * len
 
-    c = cone(x=[origin[1] + dir[1] / 2], y=[origin[2] + dir[2] / 2], z=[origin[3] + dir[3] / 2], u=[dir[1]], v=[dir[2]], w=[dir[3]],
-        colorscale=[[0, color], [1, color]],
-        opacity=opc,
-        showscale=false)
+    if endpoint == true
+        c = cone(x=[origin[1] + dir_norm[1]], y=[origin[2] + dir_norm[2]], z=[origin[3] + dir_norm[3]], u=[dir_norm[1]/len*asize], v=[dir_norm[2]]/len*asize, w=[dir_norm[3]/len*asize],
+            colorscale=[[0, color], [1, color]],
+            opacity=opc,
+            showscale=false)
+        l = scatter3d(x=[origin[1], origin[1] + dir_norm[1]], y=[origin[2], origin[2] + dir_norm[2]], z=[origin[3], origin[3] + dir_norm[3]],
+            line=attr(color=color, width=2 *dir_norm),
+            mode="lines",
+            opacity=opc,
+            showlegend=false)
+    else # origin at center
+        c = cone(x=[origin[1] + dir_norm[1] / 2], y=[origin[2] + dir_norm[2] / 2], z=[origin[3] + dir_norm[3] / 2], u=[dir_norm[1]/len*asize], v=[dir_norm[2]/len*asize], w=[dir_norm[3]/len*asize],
+            colorscale=[[0, color], [1, color]],
+            opacity=opc,
+            showscale=false)
+        l = scatter3d(x=[origin[1] - dir_norm[1] / 2, origin[1] + dir_norm[1] / 2], y=[origin[2] - dir_norm[2] / 2, origin[2] + dir_norm[2] / 2], z=[origin[3] - dir_norm[3] / 2, origin[3] + dir_norm[3] / 2],
+            line=attr(color=color, width=2 * dir_norm),
+            mode="lines",
+            opacity=opc,
+            showlegend=false)
+    end
 
     addtraces!(plt, c)
-
-    l = scatter3d(x=[origin[1] - dir[1] / 2, origin[1] + dir[1] / 2], y=[origin[2] - dir[2] / 2, origin[2] + dir[2] / 2], z=[origin[3] - dir[3] / 2, origin[3] + dir[3] / 2],
-        line=attr(color=color, width=2 * norm(dir)),
-        mode="lines",
-        opacity=opc,
-        showlegend=false)
-
     addtraces!(plt, l)
+
+    return nothing
 end
 
 """
@@ -819,6 +840,7 @@ function add_text!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, text::String,
         ),
         showlegend=false,
     ))
+    return nothing
 end
 
 """

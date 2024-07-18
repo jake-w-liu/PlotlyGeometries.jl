@@ -259,8 +259,7 @@ ___
 #### add arrows
 
 ```julia
-add_arrows!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, dir::Vector{<:Real}, len::Float64=1.0, color::String=""; opc::Real=1)
-
+add_arrows!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, dir::Vector{<:Real}, len::Real=1.0, color::String=""; opc::Real=1, endpoint::Bool=true, asize::Real=len)
 ```
 
 Creates a 3D arrow starting from a point and pointing in a given direction.
@@ -274,6 +273,7 @@ Creates a 3D arrow starting from a point and pointing in a given direction.
 
 ##### Keywords
 - `opc`: The opacity of the arrow. Default is 1.
+- `asize` Size factor of the arrow cone. Default is `len`.
 
 ___
 
