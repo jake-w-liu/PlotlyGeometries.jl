@@ -310,6 +310,8 @@ set_view!(plt::PlotlyJS.SyncPlot, az::Real, el::Real, r::Real=1.25 * sqrt(3))
 
 Set az/el (deg) view of the plot.
 
+!!There is an issue when aspectmode is set to "data". The distance seems to be incorrect, and I'm not sure what the reason is. But manually setting the aspectratio can avoid this.
+
 ##### Arguments
 - plt::PlotlyJS.SyncPlot: plot to be modified.
 - az::Real: az value.
