@@ -68,20 +68,21 @@ function cubes(origin::Vector{<:Real}, side::Real, color::String=""; opc::Real=1
 end
 
 """
-    squares(origin::Vector{<:Real}, side::Real, color::String="", mode::String="z"; opc::Real=1)
+    squares(origin::Vector{<:Real}, side::Real, mode::String="z", color::String=""; opc::Real=1)
     
     Creates a 2D square mesh centered at the given origin with the specified side length and color.
 
     # Arguments
     - `origin::Vector{<:Real}`: A vector of three Reals specifying the center of the square.
     - `side::Real`: A Real specifying the side length of the square.
-    - `color::String`: A string specifying the color of the square.
     - `mode`::String: (optional) A string specifying the orientation of the square ("x", "y", or "z"). Default is "z".
+    - `color::String`: A string specifying the color of the square.
+
     
     # Keywords
     - `opc`: (optional) A Real specifying the opacity of the square. Default is 1.
 """
-function squares(origin::Vector{<:Real}, side::Real, color::String="", mode::String="z"; opc::Real=1)
+function squares(origin::Vector{<:Real}, side::Real, mode::String="z", color::String=""; opc::Real=1)
     @assert length(origin) == 3
 
     if color == ""
@@ -889,7 +890,9 @@ function set_view!(plt::PlotlyJS.SyncPlot, az::Real, el::Real, r::Real=1.25 * sq
     x = r * cosd(el) * cosd(az)
     y = r * cosd(el) * sind(az)
     z = r * sind(el)
-    plt.plot.layout.scene_camera = attr(eye=attr(x=1.25, y=1.25, z=1.25))
+    if !haskey(plt.plot.layout.scene_camera, :eye)
+        plt.plot.layout.scene_camera = attr(eye=attr(x=1.25, y=1.25, z=1.25))
+    end
     plt.plot.layout.scene_camera[:eye][:x] = x
     plt.plot.layout.scene_camera[:eye][:y] = y
     plt.plot.layout.scene_camera[:eye][:z] = z
