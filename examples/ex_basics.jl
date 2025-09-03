@@ -38,13 +38,14 @@ l1 = lines([2, 4, 6], [0, 5, 0], "orange"; style="dash")
 addtraces!(fig, l1)
 
 # add arrow and text 
-add_arrows!(fig, [2, 4, 8], [0, 0, -1], 1/4, "black")
+add_arrows!(fig, [2, 4, 8], [0, 0, -1], 1/2, "black")
 add_text!(fig, [2, 4, 8.5], "this is a cube")
 
-add_arrows!(fig, [0, 6, 2], [0, -1, -1], 1/4, "black")
+add_arrows!(fig, [0, 6, 2], [0, -1, -1], 1/2, "black")
 add_text!(fig, [0, 6, 2.5], "this is an ellipsoid")
 
-
+add_arrows!(fig, [3, -2, 2], [0, 0, -1], 1/2, "black")
+add_text!(fig, [3, -2, 2.5], "this is a sphere")
 
 
 
