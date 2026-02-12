@@ -2,320 +2,494 @@
 
 ## Overview
 
-This manual contains the API provided by `PlotlyGeometries.jl`. Outputs of the functionalities are mostly traces to be added on Plotly plots. In order to use this module, `PlotlyJS.jl` should be installed first. 
+`PlotlyGeometries.jl` builds and manipulates 3D geometry traces for Plotly figures, using `PlotlySupply.jl`.
 
-## API
+Most constructors return a `mesh3d` or `scatter3d` trace (a `GenericTrace`), and mutating utilities operate in-place on those traces.
 
-### Geometry Creation
+For plotting and display, use `PlotlySupply`:
 
-#### cuboids
+```julia
+using PlotlySupply
+using PlotlyGeometries
+
+geo = cuboids([0, 0, 0], [1, 2, 3], "steelblue"; opc=0.4)
+fig = plot(geo, blank_layout())
+add_ref_axes!(fig)
+set_view!(fig, 35, 20)
+display(fig)
+```
+
+## API Summary
+
+### Geometry Constructors
+
+- `cuboids`
+- `cubes`
+- `squares`
+- `ellipsoids`
+- `spheres`
+- `cylinders`
+- `cones` (cone + frustum overloads)
+- `disks`
+- `planes`
+- `tori`
+- `lines`
+- `polygons` (single polygon + grouped polygons)
+
+### Geometry Transforms
+
+- `gtrans!` (single trace or vector of traces)
+- `grot!` (Tait-Bryan angles; or axis-angle; both support single trace or vector of traces)
+
+### Utilities
+
+- `sort_pts`
+- `sort_pts!`
+
+### Plot Helpers
+
+- `add_ref_axes!` (scalar or per-axis lengths)
+- `add_arrows!`
+- `add_text!`
+- `blank_layout`
+- `set_view!`
+
+## Conventions
+
+- Coordinates are 3D vectors `[x, y, z]`.
+- `axis` options are `"x"`, `"y"`, `"z"`.
+- If `color == ""`, a random RGB color is generated.
+- Angles are in degrees for rotation/view APIs.
+- Plot helper functions accept `Union{Plot, SyncPlot}` from `PlotlySupply`.
+
+---
+
+## Geometry Constructors
+
+### `cuboids`
 
 ```julia
 cuboids(origin::Vector{<:Real}, dimension::Vector{<:Real}, color::String=""; opc::Real=1)
 ```
-Creates a 3D box mesh centered at the given origin with specified dimensions and color.
 
-##### Arguments
-- `origin::Vector{<:Real}`: A vector of three Reals specifying the center of the box.
-- `dimension::Vector{<:Real}`: A vector of three Reals specifying the dimensions (width, height, depth) of the box.
-- `color::String`: A string specifying the color of the box.
+Creates a box mesh centered at `origin`.
 
-##### Keywords
-- `opc`: (optional) A Real specifying the opacity of the box. Default is 1.   
+Arguments:
+- `origin`: `[x, y, z]`
+- `dimension`: `[dx, dy, dz]`
+- `color`
 
-#### cubes
+Keywords:
+- `opc`: opacity
+
+Returns:
+- `mesh3d` trace
+
+Validation:
+- `length(origin) == 3`
+- `length(dimension) == 3`
+
+### `cubes`
 
 ```julia
 cubes(origin::Vector{<:Real}, side::Real, color::String=""; opc::Real=1)
 ```
 
-Creates a 3D cube mesh centered at the given origin with specified dimensions and color.
+Convenience wrapper for `cuboids` with equal side lengths.
 
-##### Arguments
-- `origin::Vector{<:Real}`: A vector of three Reals specifying the center of the cube.
-- `side::Real`: Side length of the cube.
-- `color::String`: A string specifying the color of the cube.
+Validation:
+- `length(origin) == 3`
+- `side > 0`
 
-##### Keywords
-- `opc`: (optional) A Real specifying the opacity of the cube. Default is 1. 
-
-___
-
-#### squares
+### `squares`
 
 ```julia
 squares(origin::Vector{<:Real}, side::Real, mode::String="z", color::String=""; opc::Real=1)
 ```
 
-Creates a 2D square mesh centered at the given origin with the specified side length and color.
+Creates a square mesh oriented by `mode`:
+- `"z"`: square lies in XY plane
+- `"x"`: square lies in YZ plane
+- `"y"`: square lies in XZ plane
 
-##### Arguments
-- `origin::Vector{<:Real}`: A vector of three Reals specifying the center of the square.
-- `side::Real`: A Real specifying the side length of the square.
-- `mode`::String: (optional) A string specifying the orientation of the square ("x", "y", or "z"). Default is "z".
-- `color::String`: A string specifying the color of the square.
+Validation:
+- `length(origin) == 3`
 
-##### Keywords
-- `opc`: (optional) A Real specifying the opacity of the square. Default is 1.
-
-___
-
-#### ellipsoids
+### `ellipsoids`
 
 ```julia
 ellipsoids(origin::Vector{<:Real}, par::Vector{<:Real}, color::String=""; opc::Real=1, tres=61, pres=31, ah::Real=0)
 ```
 
-Creates a 3D ellipsoid mesh.
+Creates an ellipsoid parameterized by semi-axes `par = [a, b, c]`.
 
-##### Arguments
-- `origin::Vector{<:Real}`: The center of the ellipsoid.
-- `par::Vector{<:Real}`: Parameters of the ellipsoid (a, b, c).
-- `color::String`: The color of the ellipsoid.
+Keywords:
+- `opc`: opacity
+- `tres`: theta resolution
+- `pres`: phi resolution
+- `ah`: `alphahull` passed to Plotly mesh
 
-##### Keywords
-- `opc`: The opacity of the ellipsoid. Default is 1.
-- `tres`: The resolution of the mesh grid (theta). Default is 61.
-- `pres`: The resolution of the mesh grid (phi). Default is 31.
-- `ah`: alphahull value. Default is 0.
-___
+Validation:
+- `length(origin) == 3`
+- `length(par) == 3`
+- `all(par .> 0)`
+- `tres > 0`
+- `pres > 0`
 
-#### spheres
+### `spheres`
 
 ```julia
 spheres(origin::Vector{<:Real}, r::Real, color::String=""; opc::Real=1, tres=60, pres=30, ah::Real=0)
-
 ```
 
-Creates a 3D sphere mesh.
+Sphere wrapper around `ellipsoids(origin, [r, r, r], ...)`.
 
-##### Arguments
-- `origin::Vector{<:Real}`: The center of the ellipsoid.
-- `r::Real`: Radius of the sphere.
-- `color::String`: The color of the ellipsoid.
+Validation:
+- `length(origin) == 3`
+- `r > 0`
 
-##### Keywords
-- `opc`: The opacity of the ellipsoid. Default is 1.
-- `tres`: The resolution of the mesh grid (theta). Default is 60.
-- `pres`: The resolution of the mesh grid (phi). Default is 30.
-- `ah`: alphahull value. Default is 0.
-
-___
-
-#### lines
+### `cylinders`
 
 ```julia
-lines(pt1::Vector{<:Real}, pt2::Vector{<:Real}, color::String; opc::Real=1, style="")
-
+cylinders(origin::Vector{<:Real}, r::Real, h::Real, axis::String="z", color::String=""; opc::Real=1, tres::Int=60, caps::Bool=true)
 ```
 
-Creates a 3D line between two points.
+Creates a cylinder centered at `origin`.
 
-##### Arguments
-- `pt1::Vector{<:Real}`: Starting point of the line.
-- `pt2::Vector{<:Real}`: Ending point of the line.
-- `color::String`: The color of the line.
+Arguments:
+- `r`: radius
+- `h`: height
+- `axis`: axis of the cylinder (`"x"`, `"y"`, `"z"`)
 
-##### Keywords
-- `opc`: The opacity of the line. Default is 1.
-- `style`: The line style (e.g., "solid", "dash"). Default is "".
+Keywords:
+- `opc`
+- `tres`: circumferential resolution
+- `caps`: whether to close top and bottom
 
-___
+Validation:
+- `length(origin) == 3`
+- `r > 0`
+- `h > 0`
+- `tres >= 3`
+- `axis in ("x", "y", "z")`
 
-#### polygons
+### `cones` (cone overload)
 
 ```julia
-polygons(pts::Vector, color::String; opc::Real=1, ah::Real=0)
+cones(origin::Vector{<:Real}, r::Real, h::Real, axis::String="z", color::String=""; opc::Real=1, tres::Int=60, caps::Bool=true)
 ```
 
-Creates a polygon mesh from a set of points (form around the mid point of the set of points).
+Creates a cone (`r` at base, `0` at top).
 
-##### Arguments
-- `pts::::Vector`: List of points defining the polygon.
-- `color::String`: The color of the polygon.
-
-##### Keywords
-- `opc`: The opacity of the polygon. Default is 1.
-- `ah`: alphahull value. Default is 0.
+### `cones` (frustum overload)
 
 ```julia
-polygons(pts::Vector, ng::Int, color::String; opc::Real=1, ah::Real=0)
+cones(origin::Vector{<:Real}, r1::Real, r2::Real, h::Real, axis::String="z", color::String=""; opc::Real=1, tres::Int=60, caps::Bool=true)
 ```
 
-Creates a group of polygons from a set of points and a specified number of vertices per polygon.
+Creates a frustum/cone with base radius `r1` and top radius `r2`.
 
-##### Arguments
-- `pts::Vector`: List of points defining the mesh.
-- `ng::Int`: Number of vertices per polygon.
-- `color::String`: The color of the mesh.
+Validation:
+- `length(origin) == 3`
+- `r1 >= 0`
+- `r2 >= 0`
+- `r1 + r2 > 0`
+- `h > 0`
+- `tres >= 3`
+- `axis in ("x", "y", "z")`
 
-##### Keywords
-- `opc`: The opacity of the mesh. Default is 1.
-- `ah`: alphahull value.
+### `disks`
 
-___
+```julia
+disks(origin::Vector{<:Real}, r::Real, axis::String="z", color::String=""; opc::Real=1, tres::Int=60)
+```
 
-### Geometry Manipulation
+Creates a circular disk.
 
-#### translation
+Validation:
+- `length(origin) == 3`
+- `r > 0`
+- `tres >= 3`
+- `axis in ("x", "y", "z")`
+
+### `planes`
+
+```julia
+planes(origin::Vector{<:Real}, dims::Vector{<:Real}, axis::String="z", color::String=""; opc::Real=1)
+```
+
+Creates a rectangular plane centered at `origin`, with dimensions `dims = [d1, d2]`, normal to `axis`.
+
+Validation:
+- `length(origin) == 3`
+- `length(dims) == 2`
+- `all(dims .> 0)`
+- `axis in ("x", "y", "z")`
+
+### `tori`
+
+```julia
+tori(origin::Vector{<:Real}, R::Real, r::Real, axis::String="z", color::String=""; opc::Real=1, ures::Int=61, vres::Int=31)
+```
+
+Creates a torus with:
+- `R`: major radius
+- `r`: minor radius
+
+Keywords:
+- `ures`: major-circle resolution
+- `vres`: minor-circle resolution
+
+Validation:
+- `length(origin) == 3`
+- `R > 0`
+- `r > 0`
+- `ures >= 3`
+- `vres >= 3`
+- `axis in ("x", "y", "z")`
+
+### `lines`
+
+```julia
+lines(pt1::Vector{<:Real}, pt2::Vector{<:Real}, color::String=""; opc::Real=1, style="")
+```
+
+Creates a `scatter3d` line trace.
+
+Keywords:
+- `opc`
+- `style`: line dash style
+
+Validation:
+- `length(pt1) == 3`
+- `length(pt2) == 3`
+
+### `polygons` (single polygon)
+
+```julia
+polygons(pts::Vector, color::String=""; opc::Real=1, ah::Real=0)
+```
+
+Creates a polygon mesh from coplanar points.
+
+Implementation detail:
+- Uses ear-clipping triangulation; supports concave polygons.
+- Expects a simple, non-self-intersecting boundary.
+
+Validation:
+- each point has length 3 and real entries
+- `length(pts) >= 3`
+
+### `polygons` (multiple polygons with fixed group size)
+
+```julia
+polygons(pts::Vector, ng::Int, color::String=""; opc::Real=1, ah::Real=0)
+```
+
+Interprets `pts` as consecutive groups of `ng` points and triangulates each group independently.
+
+Validation:
+- each point has length 3 and real entries
+- `ng > 0`
+- `length(pts) >= ng`
+- `length(pts) % ng == 0`
+
+---
+
+## Geometry Transforms
+
+### `gtrans!` (single trace)
 
 ```julia
 gtrans!(geo::GenericTrace, dis::Vector{<:Real})
 ```
 
-Translates a 3D geometry by a specified displacement vector.
+Translates `geo` in-place by displacement `dis`.
 
-##### Arguments
-- `geo::GenericTrace`: The geometry to translate.
-- `dis::Vector{<:Real}`: A vector of three Reals specifying the translation distances for the x, y, and z axes.
+Validation:
+- `length(dis) == 3`
 
-___
+### `gtrans!` (vector of traces)
 
-#### rotation (according to Tait–Bryan angle)
+```julia
+gtrans!(geos::AbstractVector{<:GenericTrace}, dis::Vector{<:Real})
+```
+
+Applies translation to each trace.
+
+### `grot!` (Tait-Bryan, single trace)
 
 ```julia
 grot!(geo::GenericTrace, rotang::Vector{<:Real}, center::Vector{<:Real}=[0])
 ```
 
-Rotates a 3D geometry around a specified center point. (Tait–Bryan rotation)
+In-place rotation with Tait-Bryan angles `[alpha, beta, gamma]` in degrees.
 
-##### Arguments
-- `geo::GenericTrace`: The 3D geometry to be rotated, which must have `x`, `y`, and `z` coordinates.
-- `rotang::Vector{<:Real}`: A vector of three Tait–Bryan rotation angles in degrees  for rotations around the x, y, and z axes respectively.
-- `center::Vector{<:Real}`: The center point of rotation. Default is `[0]`, which means the rotation center will be set at the geometric center of the object.
+Behavior:
+- If `center == [0]`, uses the geometry centroid.
 
-___
+Validation:
+- `length(rotang) == 3`
+- if center specified, `length(center) == 3`
 
-#### rotation (according to axis)
+### `grot!` (Tait-Bryan, vector of traces)
+
+```julia
+grot!(geos::AbstractVector{<:GenericTrace}, rotang::Vector{<:Real}, center::Vector{<:Real}=[0])
+```
+
+Applies same rotation to each trace.
+
+### `grot!` (axis-angle, single trace)
 
 ```julia
 grot!(geo::GenericTrace, ang::Real, axis::Vector{<:Real}, origin::Vector{<:Real}=[0])
 ```
 
-Rotates the geometry by the specified angle `ang` around the axis `axis` and origin `origin`.
+In-place rotation around `axis` by angle `ang` (degrees), using Rodrigues' formula.
 
-##### Arguments
-- `geo::GenericTrace`: The geometry to be rotated.
-- `ang::Real`: The rotation angle.
-- `axis::Vector{<:Real}`: The rotation axis.
-- `origin::Vector{<:Real}=[0]`: The rotation origin. Defaults to the center of the geometry if not specified.
+Behavior:
+- If `origin == [0]`, uses geometry centroid.
 
-___
+Validation:
+- `length(axis) == 3`
+- `norm(axis) > 0`
+- if origin specified, `length(origin) == 3`
 
-### Additional Features
+### `grot!` (axis-angle, vector of traces)
 
-#### sort points
+```julia
+grot!(geos::AbstractVector{<:GenericTrace}, ang::Real, axis::Vector{<:Real}, origin::Vector{<:Real}=[0])
+```
+
+Applies same axis-angle rotation to each trace.
+
+---
+
+## Utilities
+
+### `sort_pts`
 
 ```julia
 sort_pts(pts::Vector)
 ```
 
-Sorts points based on their angular position relative to the centroid.
+Returns a sorted copy of points by angular order around centroid.
 
-##### Arguments
-- `pts::Vector`: List of points to be sorted.
+Validation:
+- all points are 3D
 
-___
-
-#### inplace sort points
+### `sort_pts!`
 
 ```julia
 sort_pts!(pts::Vector)
 ```
 
-Sorts points in place based on their angular position relative to the centroid.
+Sorts points in-place by angular order around centroid.
 
-##### Arguments
-- `pts::Vector`: List of points to be sorted.
+Validation:
+- all points are 3D
 
-___
+---
 
-#### add reference axis
+## Plot Helpers
 
-```julia
-add_ref_axes!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}=[0, 0, 0], r::Real=1)
-```
-
-Adds reference axes (x, y, z) to a plot.
-
-##### Arguments
-- `plt::PlotlyJS.SyncPlot`: The plot to which the axes will be added.
-- `origin::Vector{<:Real}`: The origin point of the axes.
-- `r::Real`: The length of the reference axes.
-___
+All helpers below operate on:
 
 ```julia
-add_ref_axes!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, r::Vector{<:Real})
+plt::Union{Plot, SyncPlot}
 ```
 
-Adds reference axes (x, y, z) to a plot.
-
-##### Arguments
-- `plt::PlotlyJS.SyncPlot`: The plot to which the axes will be added.
-- `origin::Vector{<:Real}`: The origin point of the axes.
-- `r::Vector{<:Real}`: The lengths of the reference axes.
-___
-
-#### add arrows
+### `add_ref_axes!` (uniform length)
 
 ```julia
-add_arrows!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, dir::Vector{<:Real}, len::Real=1.0, color::String=""; opc::Real=1, endpoint::Bool=true, asize::Real=len)
+add_ref_axes!(plt::Union{Plot, SyncPlot}, origin::Vector{<:Real}=[0, 0, 0], r::Real=1)
 ```
 
-Creates a 3D arrow starting from a point and pointing in a given direction.
+Adds x/y/z colored axes with cone tips and annotation labels.
 
-##### Arguments
-- `plt::PlotlyJS.SyncPlot`: The plot to which the axes will be added.
-- `origin::Vector{<:Real}`: The starting point of the arrow.
-- `dir::Vector{<:Real}`: The direction vector of the arrow.
-- `len::Real`: length of the arrow
-- `color::String`: The color of the arrow.
+Validation:
+- `length(origin) == 3`
+- `r > 0`
 
-##### Keywords
-- `opc`: The opacity of the arrow. Default is 1.
-- `asize` Size factor of the arrow cone. Default is `len`.
-
-___
-
-#### add texts
+### `add_ref_axes!` (per-axis lengths)
 
 ```julia
-add_text!(plt::PlotlyJS.SyncPlot, origin::Vector{<:Real}, text::String, color::String="")
+add_ref_axes!(plt::Union{Plot, SyncPlot}, origin::Vector{<:Real}, r::Vector{<:Real})
 ```
 
-Add text to plot. 
+Same as above but with per-axis lengths `[rx, ry, rz]`.
 
-##### Arguments
-- plt::PlotlyJS.SyncPlot: Plot to add text.
-- origin::Vector{<:Real}: origin of the text.
-- text::String:: text to be added.
-- color::String=: color of the text.
+Validation:
+- `length(origin) == 3`
+- `length(r) == 3`
+- `all(r .> 0)`
 
-___
+### `add_arrows!`
 
-#### blank layout
+```julia
+add_arrows!(plt::Union{Plot, SyncPlot}, origin::Vector{<:Real}, dir::Vector{<:Real}, len::Real=1.0, color::String=""; opc::Real=1, endpoint::Bool=true, asize::Real=len)
+```
+
+Adds a cone+line arrow.
+
+Behavior:
+- `endpoint=true`: arrow starts at `origin` and points toward endpoint.
+- `endpoint=false`: `origin` is arrow center.
+- line width scales with `asize/len`.
+
+Validation:
+- `length(origin) == 3`
+- `length(dir) == 3`
+- `norm(dir) > 0`
+- `len > 0`
+- `asize > 0`
+
+### `add_text!`
+
+```julia
+add_text!(plt::Union{Plot, SyncPlot}, origin::Vector{<:Real}, text::String, color::String="")
+```
+
+Adds a 3D text annotation as a `scatter3d` text trace.
+
+### `blank_layout`
 
 ```julia
 blank_layout()
 ```
 
-Return blank layout for easy use.
-___
+Returns a layout with hidden axes/grid and `scene.aspectmode = "data"`.
 
-#### set view angle
+### `set_view!`
 
 ```julia
-set_view!(plt::PlotlyJS.SyncPlot, az::Real, el::Real, r::Real=1.25 * sqrt(3))
+set_view!(plt::Union{Plot, SyncPlot}, az::Real, el::Real, r::Real=1.25 * sqrt(3))
 ```
 
-Set az/el (deg) view of the plot.
+Sets camera eye from azimuth/elevation/radius.
 
-!!There is an issue when aspectmode is set to "data". The distance seems to be incorrect, and I'm not sure what the reason is. But manually setting the aspectratio can avoid this.
+Behavior:
+- `el == ±90` is nudged slightly to avoid singularity.
+- Uses `relayout!(..., scene_camera=...)`.
 
-##### Arguments
-- plt::PlotlyJS.SyncPlot: plot to be modified.
-- az::Real: az value.
-- el::Real: el value.
-- r::Real=1: distance.
-___
+---
 
+## Notes on Assertions and Errors
+
+This package primarily uses `@assert` for argument validation. Invalid inputs therefore raise `AssertionError`.
+
+Common invalid-input cases:
+- wrong vector sizes (not 3D where required)
+- non-positive radii/heights/resolutions
+- zero direction vector in `add_arrows!`
+- zero axis vector in axis-angle `grot!`
+- `polygons(pts, ng)` where `length(pts)` is not a multiple of `ng`
+
+---
+
+## Examples
+
+See `examples/`:
+- `examples/ex_basics.jl`: comprehensive geometry showcase
+- `examples/ex_polygons.jl`: polygon and grouped polygon usage

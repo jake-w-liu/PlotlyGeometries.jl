@@ -1,4 +1,4 @@
-using PlotlyJS
+using PlotlySupply
 using PlotlyGeometries
 
 # create two triangles 
@@ -44,8 +44,18 @@ push!(pts, [1, 0, 1])
 p3 = polygons(pts, 4, "yellow"; opc=0.5)
 addtraces!(fig, p3)
 
+# concave polygon support
+concave_pts = [
+    [2, 0, 0],
+    [4, 0, 0],
+    [4, 1, 0],
+    [3, 0.4, 0],
+    [2, 1, 0],
+]
+p4 = polygons(concave_pts, "tomato"; opc=0.4)
+addtraces!(fig, p4)
+
 for n = 0:360
     set_view!(fig, n, 90)
-    sleep(0.1)
+    sleep(0.01)
 end
-
